@@ -8,7 +8,7 @@ export class EmailError extends Error {
 }
 
 export class PasswordError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
   }
 }
@@ -30,7 +30,7 @@ export async function signup(
   email: string,
   password: string,
   passwordConf: string,
-): User {
+): Promise<User> {
   if (password !== passwordConf) {
     throw new PasswordError("Passwords don't match");
   }
