@@ -72,6 +72,9 @@ describe('User signup', () => {
   });
 });
 
-describe('User retrieval', () => {
+describe('User login', () => {
+  it.todo('verifies the password against the hash with BCrypt');
+  it.todo('logs a user in with correct credentials');
   it.todo('instances should not have password information on retrieval');
+  it.todo('creates a session for the user');
 });
