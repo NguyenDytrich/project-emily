@@ -77,4 +77,5 @@ describe('User login', () => {
   it.todo('logs a user in with correct credentials');
   it.todo('instances should not have password information on retrieval');
   it.todo('creates a session for the user');
+  it.todo('locks a user out of log-in on too many password attempts');
 });
