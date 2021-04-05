@@ -2,8 +2,8 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 class User extends Model {}
 
-async function initialize(url: string): void {
-  sequelize = new Sequelize(url);
+async function initialize(url: string): Promise<void> {
+  const sequelize = new Sequelize(url);
 
   try {
     await sequelize.authenticate();
@@ -14,7 +14,7 @@ async function initialize(url: string): void {
 
   User.init(
     {
-      field: {
+      email: {
         type: DataTypes.STRING,
       },
     },
