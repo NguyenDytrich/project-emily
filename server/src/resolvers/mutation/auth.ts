@@ -89,5 +89,15 @@ export async function signup(
  * @throws {UserError} When no user exists by provided credentials
  * @throws {PasswordError} When password does not match
  */
-export async function login(): void {
+export async function login(email: string, password: string): void {
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    throw new UserError(`User doesn't exist for '${email}'`);
+  }
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (isMatch) {
+    // login and create session
+  } else {
+    throw new PasswordError('Invalid password');
+  }
 }

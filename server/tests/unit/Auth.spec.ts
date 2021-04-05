@@ -76,23 +76,44 @@ describe('User signup', () => {
 
 describe('User login', () => {
   it('tries to retrieve the User from the database', async () => {
-    const modelFind = jest.spyOn(User, 'findOne');
-    await login('user@test.com', 'password');
+    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
+      return { email: 'user@test.com', password: 'somehash' };
+    });
+    // Empty catch since bcrypt validation will just fail.
+    // We're just making sure the method is called.
+    try {
+      await login('user@test.com', 'password');
+    } catch (e) {}
     expect(modelFind).toHaveBeenCalled();
   });
   it('verifies the password against the hash with BCrypt', async () => {
+    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
+      return { email: 'user@test.com', password: 'somehash' };
+    });
+
     const bcryptVal = jest.spyOn(bcrypt, 'compare');
-    await login('user@test.com', 'password');
+    // Empty catch since bcrypt validation will just fail.
+    // We're just making sure the method is called.
+    try {
+      await login('user@test.com', 'password');
+    } catch (e) {}
     expect(bcryptVal).toHaveBeenCalled();
+    expect(modelFind).toHaveBeenCalled();
   });
   it('throws PasswordError if the function does not match', async () => {
     expect.hasAssertions();
+
+    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
+      return { email: 'user@test.com', password: 'somehash' };
+    });
+
     const bcryptVal = jest
       .spyOn(bcrypt, 'compare')
       .mockImplementation(() => false);
     try {
       await login('user@test.com', 'password');
     } catch (e) {
+      expect(modelFind).toHaveBeenCalled();
       expect(bcryptVal).toHaveBeenCalled();
       expect(e).toBeInstanceOf(PasswordError);
       expect(e.message).toMatch('Invalid password');
@@ -100,9 +121,11 @@ describe('User login', () => {
   });
   it('throws UserError if no user is found', async () => {
     expect.hasAssertions();
+
     const modelFind = jest
       .spyOn(User, 'findOne')
       .mockImplementation(() => null);
+
     try {
       await login('user@test.com', 'password');
     } catch (e) {
