@@ -1,5 +1,11 @@
 import { User } from '../../models';
+
 import bcrypt from 'bcrypt';
+import {
+  UniqueConstraintError,
+  ValidationError,
+  ValidationErrorItem,
+} from 'sequelize';
 
 export class EmailError extends Error {
   constructor(message: string) {
@@ -46,12 +52,26 @@ export async function signup(
     process.env.BCRYPT_SALT_ROUNDS ?? 10,
   );
 
-  const user = await User.create({
-    fname,
-    lname,
-    email,
-    passwordHash,
-  });
-
-  return user;
+  try {
+    const user = await User.create({
+      fname,
+      lname,
+      email,
+      passwordHash,
+    });
+    return user;
+  } catch (e) {
+    if (e.name == 'SequelizeUniqueConstraintError') {
+      for (const err of e.errors) {
+        switch (err.path) {
+          case 'email':
+            throw new EmailError('Email already in use');
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    throw e;
+  }
 }

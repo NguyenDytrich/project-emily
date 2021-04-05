@@ -9,13 +9,15 @@ async function initialize(url: string): Promise<void> {
     await sequelize.authenticate();
   } catch (err) {
     console.error(err);
-    return;
+    throw err;
   }
 
   User.init(
     {
       email: {
         type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
       },
     },
     {
@@ -23,6 +25,7 @@ async function initialize(url: string): Promise<void> {
       modelName: 'User',
     },
   );
+  await User.sync();
 }
 
 export { initialize, User };

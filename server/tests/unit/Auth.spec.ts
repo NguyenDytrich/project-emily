@@ -4,7 +4,13 @@ import {
   signup,
   PasswordError,
 } from '../../src/resolvers/mutation/auth';
+
 import bcrypt from 'bcrypt';
+import {
+  UniqueConstraintError,
+  ValidationError,
+  ValidationErrorItem,
+} from 'sequelize';
 
 jest.mock('../../src/models');
 
@@ -47,7 +53,23 @@ describe('User signup', () => {
       expect(e.message).toMatch("Passwords don't match");
     }
   });
-  it.todo('should reject duplicate email addresses');
+  it('should return EmailError with message: "Email already in use" on SequelizeUniqueConstraintError', async () => {
+    User.create = jest.fn().mockImplementation(() => {
+      const err = new UniqueConstraintError();
+      (err as ValidationError).errors = [
+        new ValidationErrorItem('msg', 'unique violation', 'email'),
+      ];
+      throw err;
+    });
+
+    expect.hasAssertions();
+    try {
+      await signup('fname', 'lname', 'user@test.com', 'password', 'password');
+    } catch (e) {
+      expect(e).toBeInstanceOf(EmailError);
+      expect(e.message).toMatch('Email already in use');
+    }
+  });
 });
 
 describe('User retrieval', () => {
