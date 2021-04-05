@@ -1,8 +1,10 @@
 import { User } from '../../src/models';
 import {
-  EmailError,
+  login,
   signup,
+  EmailError,
   PasswordError,
+  UserError,
 } from '../../src/resolvers/mutation/auth';
 
 import bcrypt from 'bcrypt';
@@ -73,7 +75,43 @@ describe('User signup', () => {
 });
 
 describe('User login', () => {
-  it.todo('verifies the password against the hash with BCrypt');
+  it('tries to retrieve the User from the database', async () => {
+    const modelFind = jest.spyOn(User, 'findOne');
+    await login('user@test.com', 'password');
+    expect(modelFind).toHaveBeenCalled();
+  });
+  it('verifies the password against the hash with BCrypt', async () => {
+    const bcryptVal = jest.spyOn(bcrypt, 'compare');
+    await login('user@test.com', 'password');
+    expect(bcryptVal).toHaveBeenCalled();
+  });
+  it('throws PasswordError if the function does not match', async () => {
+    expect.hasAssertions();
+    const bcryptVal = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => false);
+    try {
+      await login('user@test.com', 'password');
+    } catch (e) {
+      expect(bcryptVal).toHaveBeenCalled();
+      expect(e).toBeInstanceOf(PasswordError);
+      expect(e.message).toMatch('Invalid password');
+    }
+  });
+  it('throws UserError if no user is found', async () => {
+    expect.hasAssertions();
+    const modelFind = jest
+      .spyOn(User, 'findOne')
+      .mockImplementation(() => null);
+    try {
+      await login('user@test.com', 'password');
+    } catch (e) {
+      expect(modelFind).toHaveBeenCalled();
+      expect(e).toBeInstanceOf(UserError);
+      expect(e.message).toMatch("User doesn't exist for 'user@test.com'");
+    }
+  });
+
   it.todo('logs a user in with correct credentials');
   it.todo('instances should not have password information on retrieval');
   it.todo('creates a session for the user');

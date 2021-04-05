@@ -19,6 +19,12 @@ export class PasswordError extends Error {
   }
 }
 
+export class UserError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 /**
  * Creates a user instance with a hashed password.
  * @param {string} fname User's first name
@@ -74,4 +80,14 @@ export async function signup(
     }
     throw e;
   }
+}
+
+/**
+ * Verifies a user's credentials, then creates a session and returns it.
+ * @param {string} email User's email
+ * @param {string} password User's password
+ * @throws {UserError} When no user exists by provided credentials
+ * @throws {PasswordError} When password does not match
+ */
+export async function login(): void {
 }
