@@ -20,7 +20,7 @@ async function initialize(url: string): Promise<void> {
       },
       lname: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING,
@@ -32,10 +32,14 @@ async function initialize(url: string): Promise<void> {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false
-      }
+        allowNull: false,
+      },
     },
     {
+      // No password on retrieval by default
+      defaultScope: {
+        exclude: ['password'],
+      },
       sequelize,
       modelName: 'User',
     },
