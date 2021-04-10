@@ -8,11 +8,15 @@ import {
 } from '../../src/resolvers/mutation/auth';
 
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import {
   UniqueConstraintError,
   ValidationError,
   ValidationErrorItem,
 } from 'sequelize';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 jest.mock('../../src/models');
 
@@ -135,8 +139,29 @@ describe('User login', () => {
     }
   });
 
-  it.todo('logs a user in with correct credentials');
+  it('logs a user in with correct credentials, returns JWT', async () => {
+    const bcryptEval = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => true);
+
+    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
+      return { id: 1, email: 'user@test.com' };
+    });
+
+    const jwtSign = jest.spyOn(jwt, 'sign');
+
+    // This should be a JWT
+    const returnedVal = await login('user@test.com', 'password');
+
+    expect(bcryptEval).toHaveBeenCalled();
+    expect(modelFind).toHaveBeenCalled();
+    expect(jwtSign).toHaveBeenCalled();
+
+    // Verify the token
+    const decoded = await jwt.verify(returnedVal, process.env.APP_SECRET);
+
+    expect(decoded.userId).toEqual(1);
+  });
   it.todo('instances should not have password information on retrieval');
-  it.todo('creates a session for the user');
   it.todo('locks a user out of log-in on too many password attempts');
 });

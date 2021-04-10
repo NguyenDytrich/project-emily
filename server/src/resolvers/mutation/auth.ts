@@ -7,6 +7,8 @@ import {
   ValidationErrorItem,
 } from 'sequelize';
 
+import jwt from 'jsonwebtoken';
+
 export class EmailError extends Error {
   constructor(message: string) {
     super(message);
@@ -89,14 +91,26 @@ export async function signup(
  * @throws {UserError} When no user exists by provided credentials
  * @throws {PasswordError} When password does not match
  */
-export async function login(email: string, password: string): void {
+export async function login(email: string, password: string): string {
   const user = await User.findOne({ where: { email } });
   if (!user) {
     throw new UserError(`User doesn't exist for '${email}'`);
   }
   const isMatch = await bcrypt.compare(password, user.password);
   if (isMatch) {
-    // login and create session
+    // login and sign a jwt
+
+    // TODO: make configurable
+    const tokenLifetime = 300; // in seconds
+    const token = await jwt.sign(
+      {
+        userId: user.id,
+        exp: Math.floor(Date.now() / 1000) + tokenLifetime,
+      },
+      // TODO: Just don't hardcode this value...
+      process.env.APP_SECRET,
+    );
+    return token;
   } else {
     throw new PasswordError('Invalid password');
   }
