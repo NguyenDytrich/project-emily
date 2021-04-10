@@ -36,6 +36,10 @@ async function initialize(url: string): Promise<void> {
       },
     },
     {
+      // No password on retrieval by default
+      defaultScope: {
+        exclude: ['password'],
+      },
       sequelize,
       modelName: 'User',
     },

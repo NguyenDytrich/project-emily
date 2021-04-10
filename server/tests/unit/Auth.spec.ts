@@ -162,6 +162,5 @@ describe('User login', () => {
 
     expect(decoded.userId).toEqual(1);
   });
-  it.todo('instances should not have password information on retrieval');
   it.todo('locks a user out of log-in on too many password attempts');
 });
