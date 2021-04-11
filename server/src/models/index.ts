@@ -1,6 +1,16 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-class User extends Model {}
+class User extends Model {
+  public id!: number;
+  public fname!: string;
+  public lname!: string;
+  public email!: string;
+  public password!: string;
+  public lastLogin!: string;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
 
 async function initialize(url: string): Promise<void> {
   const sequelize = new Sequelize(url);
@@ -38,7 +48,16 @@ async function initialize(url: string): Promise<void> {
     {
       // No password on retrieval by default
       defaultScope: {
-        exclude: ['password'],
+        attributes: {
+          exclude: ['password'],
+        },
+      },
+      scopes: {
+        auth: {
+          attributes: {
+            include: ['password'],
+          },
+        },
       },
       sequelize,
       modelName: 'User',
