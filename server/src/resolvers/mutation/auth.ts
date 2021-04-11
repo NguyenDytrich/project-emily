@@ -1,5 +1,5 @@
 import { User } from '../../models';
-import { InputType, Field, Resolver, Mutation, Arg } from 'type-graphql';
+import { ObjectType, InputType, Field, Resolver, Mutation, Arg } from 'type-graphql';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -38,6 +38,12 @@ class UserSignupInput {
 
   @Field()
   passwordConf!: string;
+}
+
+@ObjectType()
+class AuthResponse {
+  @Field()
+  token: string;
 }
 
 @Resolver()
