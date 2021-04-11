@@ -11,7 +11,7 @@ dotenv.config();
 // Initialize Postgres connection
 initialize('postgres://testsuper@localhost:5432/test').then(async () => {
   const schema = await buildSchema({
-    resolvers: [resolvers[0]],
+    resolvers,
   });
 
   const server = new ApolloServer({

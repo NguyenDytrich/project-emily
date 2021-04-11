@@ -16,7 +16,6 @@ declare class UserSignupInput {
     passwordConf: string;
 }
 export declare class AuthResolver {
-    constructor();
     /**
      * Creates a user instance with a hashed password.
      * @param {string} fname User's first name
@@ -28,7 +27,7 @@ export declare class AuthResolver {
      * @throws {PasswordError} When the password does not match the confirmation
      * @throws {EmailError} When the email is not valid
      */
-    signup(user: UserSignupInput): Promise<User>;
+    static signup(user: UserSignupInput): Promise<User>;
     /**
      * Verifies a user's credentials, then creates a session and returns it.
      * @param {string} email User's email
@@ -36,7 +35,7 @@ export declare class AuthResolver {
      * @throws {UserError} When no user exists by provided credentials
      * @throws {PasswordError} When password does not match
      */
-    login(email: string, password: string): Promise<string>;
+    static login(email: string, password: string): Promise<string>;
 }
 export {};
 //# sourceMappingURL=auth.d.ts.map

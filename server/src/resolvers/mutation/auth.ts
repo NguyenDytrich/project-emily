@@ -54,7 +54,7 @@ export class AuthResolver {
    * @throws {EmailError} When the email is not valid
    */
   @Mutation((returns) => User)
-  static async signup(@Arg('user') user: UserSignupInput): Promise<User> {
+  async signup(@Arg('user') user: UserSignupInput): Promise<User> {
     const { fname, lname, email, password, passwordConf } = user;
 
     if (password !== passwordConf) {
@@ -105,7 +105,7 @@ export class AuthResolver {
    * @throws {PasswordError} When password does not match
    */
   @Mutation((returns) => String)
-  static async login(
+  async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
   ): Promise<string> {
