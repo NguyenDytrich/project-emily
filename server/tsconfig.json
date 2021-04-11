@@ -4,7 +4,10 @@
     "module": "es2020",
     "declaration": true,
     "declarationMap": true,
+		"lib": ["es2020", "esnext.asynciterable"],
     "emitDeclarationOnly": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
     "isolatedModules": true,
 
     "strict": true,                                 /* Enable all strict type-checking options. */
@@ -38,6 +41,7 @@
 
 		"skipLibCheck": true,                           /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,        /* Disallow inconsistently-cased references to the same file. */
+
 	},
 	"exclude": ["**/*.spec.ts"]
 }
