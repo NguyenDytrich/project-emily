@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "es2020",
+    "module": "commonjs",
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true,
+		"lib": ["es2020", "esnext.asynciterable"],
+    // "emitDeclarationOnly": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
     "isolatedModules": true,
+		"outDir": "./build",
 
     "strict": true,                                 /* Enable all strict type-checking options. */
     // "noImplicitAny": true,                       /* Raise error on expressions and declarations with an implied 'any' type. */
@@ -38,6 +42,7 @@
 
 		"skipLibCheck": true,                           /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,        /* Disallow inconsistently-cased references to the same file. */
+
 	},
-	"exclude": ["**/*.spec.ts"]
+	"exclude": ["**/*.spec.ts", "./build"]
 }

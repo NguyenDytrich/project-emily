@@ -1,7 +1,8 @@
+import 'reflect-metadata';
+
 import { User } from '../../src/models';
 import {
-  login,
-  signup,
+  AuthResolver,
   EmailError,
   PasswordError,
   UserError,
@@ -9,42 +10,55 @@ import {
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import {
-  UniqueConstraintError,
-  ValidationError,
-  ValidationErrorItem,
-} from 'sequelize';
+import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
 
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { mocked } from 'ts-jest/utils';
+
 jest.mock('../../src/models');
 
-beforeAll(() => {
-  User.mockClear();
+let resolver: AuthResolver;
+
+beforeEach(() => {
+  mocked(User).mockClear();
+  resolver = new AuthResolver();
 });
 
 describe('User signup', () => {
   it('creates a model instance', async () => {
     const modelCreate = jest.spyOn(User, 'create');
-    await signup('fname', 'lname', 'user@test.com', 'password', 'password');
+    await resolver.signup({
+      fname: 'fname',
+      lname: 'lname',
+      email: 'user@test.com',
+      password: 'password',
+      passwordConf: 'password',
+    });
     expect(modelCreate).toHaveBeenCalled();
   });
   it('hashes the password', async () => {
     const bcryptHash = jest.spyOn(bcrypt, 'hash');
-    await signup('fname', 'lname', 'user@test.com', 'password', 'password');
+    await resolver.signup({
+      fname: 'fname',
+      lname: 'lname',
+      email: 'user@test.com',
+      password: 'password',
+      passwordConf: 'password',
+    });
     expect(bcryptHash).toHaveBeenCalled();
   });
   it('should reject invalid email addresses', async () => {
     expect.hasAssertions();
     try {
-      await signup(
-        'fname',
-        'lname',
-        'user(at)test.com',
-        'password',
-        'password',
-      );
+      await resolver.signup({
+        fname: 'fname',
+        lname: 'lname',
+        email: 'user(at)test.com',
+        password: 'password',
+        passwordConf: 'password',
+      });
     } catch (e) {
       expect(e).toBeInstanceOf(EmailError);
       expect(e.message).toMatch('Invalid email address');
@@ -53,7 +67,13 @@ describe('User signup', () => {
   it('should reject unconfirmed password', async () => {
     expect.hasAssertions();
     try {
-      await signup('fname', 'lname', 'user@test.com', 'password', 'mismatched');
+      await resolver.signup({
+        fname: 'fname',
+        lname: 'lname',
+        email: 'user@test.com',
+        password: 'password',
+        passwordConf: 'mismatched',
+      });
     } catch (e) {
       expect(e).toBeInstanceOf(PasswordError);
       expect(e.message).toMatch("Passwords don't match");
@@ -61,16 +81,21 @@ describe('User signup', () => {
   });
   it('should return EmailError with message: "Email already in use" on SequelizeUniqueConstraintError', async () => {
     User.create = jest.fn().mockImplementation(() => {
-      const err = new UniqueConstraintError();
-      (err as ValidationError).errors = [
-        new ValidationErrorItem('msg', 'unique violation', 'email'),
-      ];
+      const err = new UniqueConstraintError({
+        errors: [new ValidationErrorItem('msg', 'unique violation', 'email')],
+      });
       throw err;
     });
 
     expect.hasAssertions();
     try {
-      await signup('fname', 'lname', 'user@test.com', 'password', 'password');
+      await resolver.signup({
+        fname: 'fname',
+        lname: 'lname',
+        email: 'user@test.com',
+        password: 'password',
+        passwordConf: 'password',
+      });
     } catch (e) {
       expect(e).toBeInstanceOf(EmailError);
       expect(e.message).toMatch('Email already in use');
@@ -80,26 +105,26 @@ describe('User signup', () => {
 
 describe('User login', () => {
   it('tries to retrieve the User from the database', async () => {
-    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
-      return { email: 'user@test.com', password: 'somehash' };
-    });
+    const modelScope = jest.spyOn(User, 'scope').mockReturnValue(User);
+    const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(new User());
+
     // Empty catch since bcrypt validation will just fail.
     // We're just making sure the method is called.
     try {
-      await login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password');
     } catch (e) {}
+
+    // Login method should be using the 'auth' scope
+    expect(modelScope.mock.calls[0][0]).toBe('auth');
     expect(modelFind).toHaveBeenCalled();
   });
   it('verifies the password against the hash with BCrypt', async () => {
-    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
-      return { email: 'user@test.com', password: 'somehash' };
-    });
-
+    const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(new User());
     const bcryptVal = jest.spyOn(bcrypt, 'compare');
     // Empty catch since bcrypt validation will just fail.
     // We're just making sure the method is called.
     try {
-      await login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password');
     } catch (e) {}
     expect(bcryptVal).toHaveBeenCalled();
     expect(modelFind).toHaveBeenCalled();
@@ -107,15 +132,10 @@ describe('User login', () => {
   it('throws PasswordError if the function does not match', async () => {
     expect.hasAssertions();
 
-    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
-      return { email: 'user@test.com', password: 'somehash' };
-    });
-
-    const bcryptVal = jest
-      .spyOn(bcrypt, 'compare')
-      .mockImplementation(() => false);
+    const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(new User());
+    const bcryptVal = jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
     try {
-      await login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password');
     } catch (e) {
       expect(modelFind).toHaveBeenCalled();
       expect(bcryptVal).toHaveBeenCalled();
@@ -126,12 +146,10 @@ describe('User login', () => {
   it('throws UserError if no user is found', async () => {
     expect.hasAssertions();
 
-    const modelFind = jest
-      .spyOn(User, 'findOne')
-      .mockImplementation(() => null);
+    const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(null);
 
     try {
-      await login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password');
     } catch (e) {
       expect(modelFind).toHaveBeenCalled();
       expect(e).toBeInstanceOf(UserError);
@@ -140,27 +158,28 @@ describe('User login', () => {
   });
 
   it('logs a user in with correct credentials, returns JWT', async () => {
-    const bcryptEval = jest
-      .spyOn(bcrypt, 'compare')
-      .mockImplementation(() => true);
+    const user = new User();
+    user.id = 1;
 
-    const modelFind = jest.spyOn(User, 'findOne').mockImplementation(() => {
-      return { id: 1, email: 'user@test.com' };
-    });
-
+    const bcryptEval = jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+    const modelScope = jest.spyOn(User, 'scope').mockReturnValue(User);
+    const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(user);
     const jwtSign = jest.spyOn(jwt, 'sign');
 
     // This should be a JWT
-    const returnedVal = await login('user@test.com', 'password');
+    const returnedVal = await resolver.login('user@test.com', 'password');
 
     expect(bcryptEval).toHaveBeenCalled();
+
+    // The login method should use the 'auth' scope
+    expect(modelScope.mock.calls[0][0]).toBe('auth');
     expect(modelFind).toHaveBeenCalled();
     expect(jwtSign).toHaveBeenCalled();
 
     // Verify the token
-    const decoded = await jwt.verify(returnedVal, process.env.APP_SECRET);
+    const decoded = await jwt.verify(returnedVal, process.env.APP_SECRET ?? '');
 
-    expect(decoded.userId).toEqual(1);
+    expect((decoded as { userId: string }).userId).toEqual(1);
   });
   it.todo('locks a user out of log-in on too many password attempts');
 });
