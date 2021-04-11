@@ -85,6 +85,7 @@ async function initialize(url: string): Promise<void> {
   RefreshToken.init(
     {
       token: {
+        // TODO replace DataTypes.STRING with DataTypes.UUIDV4
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,

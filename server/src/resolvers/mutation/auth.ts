@@ -1,4 +1,4 @@
-import { User } from '../../models';
+import { User, RefreshToken } from '../../models';
 import {
   ObjectType,
   InputType,
@@ -10,6 +10,7 @@ import {
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 export class EmailError extends Error {
   constructor(message: string) {
@@ -138,6 +139,9 @@ export class AuthResolver {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // login and sign a jwt
+      const refreshToken = uuidv4();
+
+      await RefreshToken.create({ userId: user.id, token: refreshToken });
 
       // TODO: make configurable
       const tokenLifetime = 300; // in seconds
@@ -145,6 +149,7 @@ export class AuthResolver {
         {
           userId: user.id,
           exp: Math.floor(Date.now() / 1000) + tokenLifetime,
+          refreshToken,
         },
         process.env.APP_SECRET ?? '',
       );

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { User } from '../../src/models';
+import { User, RefreshToken } from '../../src/models';
 import {
   AuthResolver,
   AuthResponse,
@@ -27,6 +27,7 @@ let resolver: AuthResolver;
 
 beforeEach(() => {
   mocked(User).mockClear();
+  mocked(RefreshToken).mockClear();
   resolver = new AuthResolver();
 });
 
@@ -177,6 +178,8 @@ describe('User login', () => {
     const modelScope = jest.spyOn(User, 'scope').mockReturnValue(User);
     const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(user);
     const jwtSign = jest.spyOn(jwt, 'sign');
+    const refreshCreate = jest.spyOn(RefreshToken, 'create');
+    refreshCreate.mockClear();
 
     // This should be a JWT
     const returnedVal = await resolver.login('user@test.com', 'password');
@@ -185,6 +188,7 @@ describe('User login', () => {
 
     // The login method should use the 'auth' scope
     expect(modelScope.mock.calls[0][0]).toBe('auth');
+    expect(refreshCreate.mock.calls[0][0].userId).toEqual(user.id);
     expect(modelFind).toHaveBeenCalled();
     expect(jwtSign).toHaveBeenCalled();
 
@@ -195,11 +199,14 @@ describe('User login', () => {
     )) as TokenPayload;
 
     // User ID should be present in the payload
-    expect(decoded.userId).toEqual(1);
+    expect(decoded.userId).toEqual(user.id);
+    expect(decoded.userId).toEqual(refreshCreate.mock.calls[0][0].userId);
 
     // JWT refresh token should be a UUID created using uuid.v4()
     expect(uuidValidate(decoded.refreshToken)).toBe(true);
     expect(uuidVersion(decoded.refreshToken)).toBe(4);
+    // The stored token should be the same as the one that's returned in the payload.
+    expect(decoded.refreshToken).toEqual(refreshCreate.mock.calls[0][0].token);
   });
   it.todo('locks a user out of log-in on too many password attempts');
 });
