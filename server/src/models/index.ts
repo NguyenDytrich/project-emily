@@ -24,6 +24,11 @@ class User extends Model {
   public readonly updatedAt!: Date;
 }
 
+class RefreshToken extends Model {
+  public userId!: number;
+  public token!: string;
+}
+
 async function initialize(url: string): Promise<void> {
   const sequelize = new Sequelize(url);
 
@@ -73,9 +78,29 @@ async function initialize(url: string): Promise<void> {
       },
       sequelize,
       modelName: 'User',
+      underscored: true,
     },
   );
-  await User.sync();
+
+  RefreshToken.init(
+    {
+      token: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+    },
+    {
+      sequelize,
+      underscored: true,
+    },
+  );
+
+  User.hasOne(RefreshToken);
+  RefreshToken.belongsTo(User);
+
+  await User.sync({ force: true });
+  await RefreshToken.sync({ force: true });
 }
 
-export { initialize, User };
+export { initialize, User, RefreshToken };
