@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { User } from '../../src/models';
 import {
   AuthResolver,
+  AuthResponse,
   EmailError,
   PasswordError,
   UserError,
@@ -104,6 +105,14 @@ describe('User signup', () => {
 });
 
 describe('User login', () => {
+  it('returns the an AuthResponse on successful authentication', async () => {
+    jest.spyOn(User, 'scope').mockReturnValue(User);
+    jest.spyOn(User, 'findOne').mockResolvedValue(new User());
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+
+    const returnedVal = await resolver.login('user@test.com', 'password');
+    expect(returnedVal).toBeInstanceOf(AuthResponse);
+  });
   it('tries to retrieve the User from the database', async () => {
     const modelScope = jest.spyOn(User, 'scope').mockReturnValue(User);
     const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(new User());
@@ -177,7 +186,10 @@ describe('User login', () => {
     expect(jwtSign).toHaveBeenCalled();
 
     // Verify the token
-    const decoded = await jwt.verify(returnedVal, process.env.APP_SECRET ?? '');
+    const decoded = await jwt.verify(
+      returnedVal.token,
+      process.env.APP_SECRET ?? '',
+    );
 
     expect((decoded as { userId: string }).userId).toEqual(1);
   });

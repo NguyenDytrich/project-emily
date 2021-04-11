@@ -1,5 +1,12 @@
 import { User } from '../../models';
-import { ObjectType, InputType, Field, Resolver, Mutation, Arg } from 'type-graphql';
+import {
+  ObjectType,
+  InputType,
+  Field,
+  Resolver,
+  Mutation,
+  Arg,
+} from 'type-graphql';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -41,7 +48,11 @@ class UserSignupInput {
 }
 
 @ObjectType()
-class AuthResponse {
+export class AuthResponse {
+  constructor(token: string) {
+    this.token = token;
+  }
+
   @Field()
   token: string;
 }
@@ -110,11 +121,11 @@ export class AuthResolver {
    * @throws {UserError} When no user exists by provided credentials
    * @throws {PasswordError} When password does not match
    */
-  @Mutation((returns) => String)
+  @Mutation((returns) => AuthResponse)
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
-  ): Promise<string> {
+  ): Promise<AuthResponse> {
     const user = await User.scope('auth').findOne({ where: { email } });
     if (!user) {
       throw new UserError(`User doesn't exist for '${email}'`);
@@ -132,7 +143,7 @@ export class AuthResolver {
         },
         process.env.APP_SECRET ?? '',
       );
-      return token;
+      return new AuthResponse(token);
     } else {
       throw new PasswordError('Invalid password');
     }
