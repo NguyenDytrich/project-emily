@@ -6,12 +6,15 @@ import {
   AuthResponse,
   EmailError,
   PasswordError,
+  TokenPayload,
   UserError,
 } from '../../src/resolvers/mutation/auth';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
+import { validate as uuidValidate } from 'uuid';
+import { version as uuidVersion } from 'uuid';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -186,12 +189,17 @@ describe('User login', () => {
     expect(jwtSign).toHaveBeenCalled();
 
     // Verify the token
-    const decoded = await jwt.verify(
+    const decoded = (await jwt.verify(
       returnedVal.token,
       process.env.APP_SECRET ?? '',
-    );
+    )) as TokenPayload;
 
-    expect((decoded as { userId: string }).userId).toEqual(1);
+    // User ID should be present in the payload
+    expect(decoded.userId).toEqual(1);
+
+    // JWT refresh token should be a UUID created using uuid.v4()
+    expect(uuidValidate(decoded.refreshToken)).toBe(true);
+    expect(uuidVersion(decoded.refreshToken)).toBe(4);
   });
   it.todo('locks a user out of log-in on too many password attempts');
 });

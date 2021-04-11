@@ -57,6 +57,11 @@ export class AuthResponse {
   token: string;
 }
 
+export interface TokenPayload {
+  userId: string;
+  refreshToken: string;
+}
+
 @Resolver()
 export class AuthResolver {
   /**
