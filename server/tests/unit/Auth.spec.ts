@@ -10,16 +10,20 @@ import {
   UserError,
 } from '../../src/resolvers/mutation/auth';
 
+import AuthChecker from '../../src/AuthChecker';
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
 import { validate as uuidValidate } from 'uuid';
 import { version as uuidVersion } from 'uuid';
+import { ResolverData } from 'type-graphql';
 
 import dotenv from 'dotenv';
 dotenv.config();
 
 import { mocked } from 'ts-jest/utils';
+import mockito from 'ts-mockito';
 
 jest.mock('../../src/models');
 
@@ -209,4 +213,42 @@ describe('User login', () => {
     expect(decoded.refreshToken).toEqual(refreshCreate.mock.calls[0][0].token);
   });
   it.todo('locks a user out of log-in on too many password attempts');
+});
+
+interface Context {
+  auth: string;
+}
+
+describe('AuthChecker', () => {
+  it('Verifies the auth token when "Bearer" scheme is used', () => {
+    // Mock jwt.verify to return a dummy payload
+    const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+      return {
+        key: 'value',
+      };
+    });
+
+    // Mock the request context
+    const mResolverData = mockito.mock<ResolverData<Context>>();
+    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
+    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+
+    // When jwt.verify succeeds, the request should be authorized
+    expect(jwtVerify).toHaveBeenCalled();
+    expect(AuthChecker(resolverData, [''])).toBe(true);
+  });
+  it.todo('Returns false if the JWT is not valid');
+  it.todo('Returns false if the JWT is expired');
+  it('Returns false if no auth is provided', () => {
+    const mResolverData = mockito.mock<ResolverData<Context>>();
+    mockito.when(mResolverData.context).thenReturn({ auth: '' });
+    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    expect(AuthChecker(resolverData, [''])).toBe(false);
+  });
+  it('Returns false if another auth scheme is provided', () => {
+    const mResolverData = mockito.mock<ResolverData<Context>>();
+    mockito.when(mResolverData.context).thenReturn({ auth: 'Basic asdfasdf' });
+    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    expect(AuthChecker(resolverData, [''])).toBe(false);
+  });
 });

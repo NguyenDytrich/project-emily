@@ -1,5 +1,6 @@
 import { User, RefreshToken } from '../../models';
 import {
+  Authorized,
   ObjectType,
   InputType,
   Field,
@@ -157,5 +158,13 @@ export class AuthResolver {
     } else {
       throw new PasswordError('Invalid password');
     }
+  }
+
+  @Authorized()
+  @Mutation((returns) => AuthResponse)
+  async refresh(
+    @Arg('refreshToken') refreshToken: string,
+  ): Promise<AuthResponse> {
+    throw new Error('not implemented');
   }
 }
