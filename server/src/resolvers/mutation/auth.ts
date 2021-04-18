@@ -1,6 +1,5 @@
-import { User, RefreshToken } from '../../models';
+import { User } from '../../models';
 import {
-  Authorized,
   ObjectType,
   InputType,
   Field,
@@ -51,16 +50,16 @@ class UserSignupInput {
 
 @ObjectType()
 export class AuthResponse {
-  constructor(token: string, expiresAt: Date) {
+  // TODO figure out a better way to handle the expire date here.
+  constructor(token: string, exp: number) {
     this.token = token;
-    this.expiresAt = expiresAt;
+    this.expiresAt = exp;
   }
+  @Field()
+  token!: string;
 
   @Field()
-  token: string;
-
-  @Field()
-  expiresAt: Date;
+  expiresAt!: number;
 }
 
 export interface TokenPayload {
@@ -80,7 +79,7 @@ export class AuthResolver {
    * @throws {PasswordError} When the password does not match the confirmation
    * @throws {EmailError} When the email is not valid
    */
-  @Mutation((returns) => User)
+  @Mutation(() => User)
   async signup(@Arg('user') user: UserSignupInput): Promise<User> {
     const { fname, lname, email, password, passwordConf } = user;
 
@@ -131,7 +130,7 @@ export class AuthResolver {
    * @throws {UserError} When no user exists by provided credentials
    * @throws {PasswordError} When password does not match
    */
-  @Mutation((returns) => AuthResponse)
+  @Mutation(() => AuthResponse)
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
@@ -143,23 +142,20 @@ export class AuthResolver {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // login and sign a jwt
-      const refreshToken = uuidv4();
-
-      await RefreshToken.create({ userId: user.id, token: refreshToken });
 
       // TODO: make configurable
       const tokenLifetime = 300; // in seconds
+      const exp = Math.floor(Date.now() / 1000) + tokenLifetime;
       const token = await jwt.sign(
         {
           userId: user.id,
-          exp: Math.floor(Date.now() / 1000) + tokenLifetime,
-          refreshToken,
+          exp,
         },
         process.env.APP_SECRET ?? '',
       );
 
       // TODO Auth successful; send refresh token as cookie
-      return new AuthResponse(token);
+      return new AuthResponse(token, exp);
     } else {
       throw new PasswordError('Invalid password');
     }

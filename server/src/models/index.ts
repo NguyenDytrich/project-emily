@@ -79,7 +79,6 @@ async function initialize(url: string): Promise<void> {
     },
   );
 
-  User.hasOne(RefreshToken);
   await User.sync({ force: true });
 }
 
