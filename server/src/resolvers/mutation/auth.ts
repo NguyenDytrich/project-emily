@@ -51,17 +51,20 @@ class UserSignupInput {
 
 @ObjectType()
 export class AuthResponse {
-  constructor(token: string) {
+  constructor(token: string, expiresAt: Date) {
     this.token = token;
+    this.expiresAt = expiresAt;
   }
 
   @Field()
   token: string;
+
+  @Field()
+  expiresAt: Date;
 }
 
 export interface TokenPayload {
   userId: string;
-  refreshToken: string;
 }
 
 @Resolver()
@@ -154,17 +157,11 @@ export class AuthResolver {
         },
         process.env.APP_SECRET ?? '',
       );
+
+      // TODO Auth successful; send refresh token as cookie
       return new AuthResponse(token);
     } else {
       throw new PasswordError('Invalid password');
     }
-  }
-
-  @Authorized()
-  @Mutation((returns) => AuthResponse)
-  async refresh(
-    @Arg('refreshToken') refreshToken: string,
-  ): Promise<AuthResponse> {
-    throw new Error('not implemented');
   }
 }

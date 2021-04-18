@@ -24,11 +24,6 @@ class User extends Model {
   public readonly updatedAt!: Date;
 }
 
-class RefreshToken extends Model {
-  public userId!: number;
-  public token!: string;
-}
-
 async function initialize(url: string): Promise<void> {
   const sequelize = new Sequelize(url);
 
@@ -49,11 +44,13 @@ async function initialize(url: string): Promise<void> {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      // TODO I think Sequelize has an email field?
       email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
       },
+      // TODO change to date
       lastLogin: {
         type: DataTypes.STRING,
       },
@@ -82,26 +79,8 @@ async function initialize(url: string): Promise<void> {
     },
   );
 
-  RefreshToken.init(
-    {
-      token: {
-        // TODO replace DataTypes.STRING with DataTypes.UUIDV4
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-    },
-    {
-      sequelize,
-      underscored: true,
-    },
-  );
-
   User.hasOne(RefreshToken);
-  RefreshToken.belongsTo(User);
-
   await User.sync({ force: true });
-  await RefreshToken.sync({ force: true });
 }
 
-export { initialize, User, RefreshToken };
+export { initialize, User };
