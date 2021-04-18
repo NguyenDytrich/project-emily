@@ -13,6 +13,7 @@ import {
 import AuthChecker from '../../src/AuthChecker';
 
 import bcrypt from 'bcrypt';
+import { TokenExpiredError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
 import { validate as uuidValidate } from 'uuid';
@@ -234,11 +235,32 @@ describe('AuthChecker', () => {
     const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
 
     // When jwt.verify succeeds, the request should be authorized
-    expect(jwtVerify).toHaveBeenCalled();
     expect(AuthChecker(resolverData, [''])).toBe(true);
+    expect(jwtVerify).toHaveBeenCalled();
   });
-  it.todo('Returns false if the JWT is not valid');
-  it.todo('Returns false if the JWT is expired');
+  it('Returns false if the JWT is not valid', () => {
+    const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+      throw new Error();
+    });
+    const mResolverData = mockito.mock<ResolverData<Context>>();
+    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
+    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+
+    expect(AuthChecker(resolverData, [''])).toBe(false);
+    expect(jwtVerify).toHaveBeenCalled();
+  });
+  it('Returns false if the JWT is expired', () => {
+    const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+      throw new TokenExpiredError('jwt expired', new Date());
+    });
+
+    const mResolverData = mockito.mock<ResolverData<Context>>();
+    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
+    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+
+    expect(AuthChecker(resolverData, [''])).toBe(false);
+    expect(jwtVerify).toHaveBeenCalled();
+  });
   it('Returns false if no auth is provided', () => {
     const mResolverData = mockito.mock<ResolverData<Context>>();
     mockito.when(mResolverData.context).thenReturn({ auth: '' });
