@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import AppContext from '../../src/AppContext';
 import { User } from '../../src/models';
 import {
   AuthResolver,
@@ -9,22 +10,24 @@ import {
   TokenPayload,
   UserError,
 } from '../../src/resolvers/mutation/auth';
-
 import AuthChecker from '../../src/AuthChecker';
+import { createMockResolverData } from '../utils';
 
+// 3rd parties
 import bcrypt from 'bcrypt';
 import { TokenExpiredError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
-import { validate as uuidValidate } from 'uuid';
-import { version as uuidVersion } from 'uuid';
 import { ResolverData } from 'type-graphql';
 
+// Config test environment
 import dotenv from 'dotenv';
 dotenv.config();
 
 import { mocked } from 'ts-jest/utils';
 import mockito from 'ts-mockito';
+
+// Test suite
 
 jest.mock('../../src/models');
 
@@ -35,27 +38,23 @@ beforeEach(() => {
   resolver = new AuthResolver();
 });
 
+const goodSignup = {
+  fname: 'fname',
+  lname: 'lname',
+  email: 'user@test.com',
+  password: 'password',
+  passwordConf: 'password',
+};
+
 describe('User signup', () => {
   it('creates a model instance', async () => {
     const modelCreate = jest.spyOn(User, 'create');
-    await resolver.signup({
-      fname: 'fname',
-      lname: 'lname',
-      email: 'user@test.com',
-      password: 'password',
-      passwordConf: 'password',
-    });
+    await resolver.signup(goodSignup);
     expect(modelCreate).toHaveBeenCalled();
   });
   it('hashes the password', async () => {
     const bcryptHash = jest.spyOn(bcrypt, 'hash');
-    await resolver.signup({
-      fname: 'fname',
-      lname: 'lname',
-      email: 'user@test.com',
-      password: 'password',
-      passwordConf: 'password',
-    });
+    await resolver.signup(goodSignup);
     expect(bcryptHash).toHaveBeenCalled();
   });
   it('should reject invalid email addresses', async () => {
@@ -205,10 +204,6 @@ describe('User login', () => {
   it.todo('locks a user out of log-in on too many password attempts');
 });
 
-interface Context {
-  auth: string;
-}
-
 describe('AuthChecker', () => {
   it('Verifies the auth token when "Bearer" scheme is used', () => {
     // Mock jwt.verify to return a dummy payload
@@ -219,47 +214,40 @@ describe('AuthChecker', () => {
     });
 
     // Mock the request context
-    const mResolverData = mockito.mock<ResolverData<Context>>();
-    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
-    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
 
     // When jwt.verify succeeds, the request should be authorized
     expect(AuthChecker(resolverData, [''])).toBe(true);
     expect(jwtVerify).toHaveBeenCalled();
   });
+
   it('Returns false if the JWT is not valid', () => {
     const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
       throw new Error();
     });
-    const mResolverData = mockito.mock<ResolverData<Context>>();
-    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
-    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
 
     expect(AuthChecker(resolverData, [''])).toBe(false);
     expect(jwtVerify).toHaveBeenCalled();
   });
+
   it('Returns false if the JWT is expired', () => {
     const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
       throw new TokenExpiredError('jwt expired', new Date());
     });
-
-    const mResolverData = mockito.mock<ResolverData<Context>>();
-    mockito.when(mResolverData.context).thenReturn({ auth: 'Bearer asdfasdf' });
-    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
 
     expect(AuthChecker(resolverData, [''])).toBe(false);
     expect(jwtVerify).toHaveBeenCalled();
   });
+
   it('Returns false if no auth is provided', () => {
-    const mResolverData = mockito.mock<ResolverData<Context>>();
-    mockito.when(mResolverData.context).thenReturn({ auth: '' });
-    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    const resolverData = createMockResolverData();
     expect(AuthChecker(resolverData, [''])).toBe(false);
   });
+
   it('Returns false if another auth scheme is provided', () => {
-    const mResolverData = mockito.mock<ResolverData<Context>>();
-    mockito.when(mResolverData.context).thenReturn({ auth: 'Basic asdfasdf' });
-    const resolverData: ResolverData<Context> = mockito.instance(mResolverData);
+    const resolverData = createMockResolverData({ auth: 'Basic asdfjkl' });
     expect(AuthChecker(resolverData, [''])).toBe(false);
   });
 });

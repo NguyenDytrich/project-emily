@@ -1,5 +1,8 @@
 import { User } from '../../models';
+import AppContext from '../../AppContext';
+
 import {
+  Ctx,
   ObjectType,
   InputType,
   Field,
@@ -10,7 +13,6 @@ import {
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 
 export class EmailError extends Error {
   constructor(message: string) {
@@ -155,7 +157,8 @@ export class AuthResolver {
       );
 
       // TODO Auth successful; send refresh token as cookie
-      return new AuthResponse(token, exp);
+      const authRes = new AuthResponse(token, exp);
+      return authRes;
     } else {
       throw new PasswordError('Invalid password');
     }
