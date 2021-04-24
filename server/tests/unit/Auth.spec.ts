@@ -4,7 +4,8 @@ import { User } from '../../src/models';
 import {
   AuthResolver,
   AuthResponse,
-  TokenPayload,
+  AuthPayload,
+  RefreshPayload,
 } from '../../src/resolvers/mutation/auth';
 import { EmailError, PasswordError, UserError } from '../../src/lib';
 import AuthChecker from '../../src/AuthChecker';
@@ -220,7 +221,7 @@ describe('User login', () => {
     const decoded = (await jwt.verify(
       returnedVal.token,
       process.env.APP_SECRET ?? '',
-    )) as TokenPayload;
+    )) as AuthPayload;
 
     // User ID should be present in the payload
     expect(decoded.userId).toEqual(user.id);
@@ -288,16 +289,22 @@ describe('Token generation', () => {
     const payload = (await jwt.verify(
       token,
       process.env.APP_SECRET ?? '',
-    )) as TokenPayload;
+    )) as AuthPayload;
 
     expect(payload.userId).toEqual(user.id);
   });
   it('Signs refresh tokens with a different secret', async () => {
+    const user = new User();
+    user.id = 1;
     const jwtSign = jest.spyOn(jwt, 'sign');
-    const token = await createRefreshToken();
+    const token = await createRefreshToken(user);
 
     expect(jwtSign).toHaveBeenCalled();
-    jwt.verify(token, process.env.REFRESH_SECRET ?? '');
+    const payload = (await jwt.verify(
+      token,
+      process.env.REFRESH_SECRET ?? '',
+    )) as RefreshPayload;
+    expect(payload.userId).toEqual(user.id);
   });
 });
 

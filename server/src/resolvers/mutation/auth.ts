@@ -47,8 +47,13 @@ export class AuthResponse {
   token!: string;
 }
 
-export interface TokenPayload {
+export interface AuthPayload {
   userId: string;
+}
+
+export interface RefreshPayload {
+  userId: string;
+  tokenId: string;
 }
 
 @Resolver()
@@ -129,11 +134,11 @@ export class AuthResolver {
     if (isMatch) {
       // login and sign a jwt
       const token = await createAuthToken(user);
-      const refreshToken = await createRefreshToken();
+      const refreshToken = await createRefreshToken(user);
 
       // TODO Auth successful; send refresh token as cookie
       const authRes = new AuthResponse(token);
-      res.cookie('rf', refreshToken, {
+      res.cookie('rftid', refreshToken, {
         httpOnly: true,
         path: '/refresh_token',
       });
