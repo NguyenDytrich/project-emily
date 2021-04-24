@@ -115,10 +115,13 @@ describe('User signup', () => {
 describe('User login', () => {
   let mockResolverData;
   let context: AppContext;
+  const setCookie = jest.fn();
   beforeEach(() => {
     mockResolverData = createMockResolverData();
     context = mockResolverData.context;
-    context.res.cookie = jest.fn();
+    context.res.cookie = setCookie;
+
+    setCookie.mockClear();
   });
 
   it('returns the an AuthResponse on successful authentication', async () => {
@@ -132,6 +135,7 @@ describe('User login', () => {
       context,
     );
     expect(returnedVal).toBeInstanceOf(AuthResponse);
+    expect(setCookie).toHaveBeenCalled();
   });
   it('tries to retrieve the User from the database', async () => {
     const modelScope = jest.spyOn(User, 'scope').mockReturnValue(User);
@@ -168,6 +172,7 @@ describe('User login', () => {
     } catch (e) {
       expect(modelFind).toHaveBeenCalled();
       expect(bcryptVal).toHaveBeenCalled();
+      expect(setCookie).not.toHaveBeenCalled();
       expect(e).toBeInstanceOf(PasswordError);
       expect(e.message).toMatch('Invalid password');
     }
@@ -183,6 +188,7 @@ describe('User login', () => {
       expect(modelFind).toHaveBeenCalled();
       expect(e).toBeInstanceOf(UserError);
       expect(e.message).toMatch("User doesn't exist for 'user@test.com'");
+      expect(setCookie).not.toHaveBeenCalled();
     }
   });
 
@@ -208,6 +214,7 @@ describe('User login', () => {
     expect(modelScope.mock.calls[0][0]).toBe('auth');
     expect(modelFind).toHaveBeenCalled();
     expect(jwtSign).toHaveBeenCalled();
+    expect(setCookie).toHaveBeenCalled();
 
     // Verify the token
     const decoded = (await jwt.verify(
