@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 
-import AppContext from '../../src/AppContext';
 import { User } from '../../src/models';
 import {
   AuthResolver,
@@ -18,17 +17,14 @@ import bcrypt from 'bcrypt';
 import { TokenExpiredError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
-import { ResolverData } from 'type-graphql';
 
 // Config test environment
 import dotenv from 'dotenv';
 dotenv.config();
 
 import { mocked } from 'ts-jest/utils';
-import mockito from 'ts-mockito';
 
 // Test suite
-
 jest.mock('../../src/models');
 
 let resolver: AuthResolver;

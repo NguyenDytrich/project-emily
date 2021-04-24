@@ -44,7 +44,7 @@ dotenv.config();
   server.applyMiddleware({ app, cors: false });
 
   // Go live
-  await app.listen(4000, () => {
+  app.listen(4000, () => {
     console.log('Server live at localhost:4000');
     console.log(`GraphQL live at localhost:4000${server.graphqlPath}`);
   });

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const authChecker: AuthChecker<AppContext> = ({
   context: { req },
 }): boolean => {
-  const auth = req.headers.authorization;
+  const auth = req?.headers.authorization;
   if (!auth) {
     return false;
   }
