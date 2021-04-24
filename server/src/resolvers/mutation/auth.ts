@@ -1,8 +1,7 @@
 import { User } from '../../models';
-import AppContext from '../../AppContext';
+import { EmailError, PasswordError, UserError } from '../../lib';
 
 import {
-  Ctx,
   ObjectType,
   InputType,
   Field,
@@ -13,24 +12,6 @@ import {
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
-export class EmailError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class PasswordError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class UserError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
 
 @InputType()
 class UserSignupInput {

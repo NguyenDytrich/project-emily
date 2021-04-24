@@ -4,13 +4,12 @@ import { User } from '../../src/models';
 import {
   AuthResolver,
   AuthResponse,
-  EmailError,
-  PasswordError,
   TokenPayload,
-  UserError,
 } from '../../src/resolvers/mutation/auth';
+import { EmailError, PasswordError, UserError } from '../../src/lib';
 import AuthChecker from '../../src/AuthChecker';
 import { createMockResolverData } from '../utils';
+import { createAuthToken, createRefreshToken } from '../../src/lib';
 
 // 3rd parties
 import bcrypt from 'bcrypt';
@@ -32,6 +31,11 @@ let resolver: AuthResolver;
 beforeEach(() => {
   mocked(User).mockClear();
   resolver = new AuthResolver();
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
 
 const goodSignup = {
@@ -246,4 +250,34 @@ describe('AuthChecker', () => {
     const resolverData = createMockResolverData({ auth: 'Basic asdfjkl' });
     expect(AuthChecker(resolverData, [''])).toBe(false);
   });
+});
+
+describe('Token generation', () => {
+  it('Signs auth tokens', async () => {
+    const user = new User();
+    user.id = 1;
+
+    const jwtSign = jest.spyOn(jwt, 'sign');
+    const token = await createAuthToken(user);
+
+    expect(jwtSign).toHaveBeenCalled();
+    const payload = (await jwt.verify(
+      token,
+      process.env.APP_SECRET ?? '',
+    )) as TokenPayload;
+
+    expect(payload.userId).toEqual(user.id);
+  });
+  it('Signs refresh tokens with a different secret', async () => {
+    const jwtSign = jest.spyOn(jwt, 'sign');
+    const token = await createRefreshToken();
+
+    expect(jwtSign).toHaveBeenCalled();
+    jwt.verify(token, process.env.REFRESH_SECRET ?? '');
+  });
+});
+
+describe('Refresh token', () => {
+  it.todo('Returns nothing when passed an invalid refresh token');
+  it.todo('Returns a valid JWT access token when passed a valid refresh token');
 });
