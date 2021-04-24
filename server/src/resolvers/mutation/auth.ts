@@ -1,5 +1,6 @@
 import { User } from '../../models';
 import { EmailError, PasswordError, UserError } from '../../lib';
+import { createAuthToken } from '../../lib';
 
 import {
   ObjectType,
@@ -11,7 +12,6 @@ import {
 } from 'type-graphql';
 
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 
 @InputType()
 class UserSignupInput {
@@ -33,16 +33,11 @@ class UserSignupInput {
 
 @ObjectType()
 export class AuthResponse {
-  // TODO figure out a better way to handle the expire date here.
-  constructor(token: string, exp: number) {
+  constructor(token: string) {
     this.token = token;
-    this.expiresAt = exp;
   }
   @Field()
   token!: string;
-
-  @Field()
-  expiresAt!: number;
 }
 
 export interface TokenPayload {
@@ -125,20 +120,10 @@ export class AuthResolver {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // login and sign a jwt
-
-      // TODO: make configurable
-      const tokenLifetime = 300; // in seconds
-      const exp = Math.floor(Date.now() / 1000) + tokenLifetime;
-      const token = await jwt.sign(
-        {
-          userId: user.id,
-          exp,
-        },
-        process.env.APP_SECRET ?? '',
-      );
+      const token = await createAuthToken(user);
 
       // TODO Auth successful; send refresh token as cookie
-      const authRes = new AuthResponse(token, exp);
+      const authRes = new AuthResponse(token);
       return authRes;
     } else {
       throw new PasswordError('Invalid password');
