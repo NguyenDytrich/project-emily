@@ -10,6 +10,7 @@ import { EmailError, PasswordError, UserError } from '../../src/lib';
 import AuthChecker from '../../src/AuthChecker';
 import { createMockResolverData } from '../utils';
 import { createAuthToken, createRefreshToken } from '../../src/lib';
+import AppContext from '../../src/AppContext';
 
 // 3rd parties
 import bcrypt from 'bcrypt';
@@ -112,12 +113,24 @@ describe('User signup', () => {
 });
 
 describe('User login', () => {
+  let mockResolverData;
+  let context: AppContext;
+  beforeEach(() => {
+    mockResolverData = createMockResolverData();
+    context = mockResolverData.context;
+    context.res.cookie = jest.fn();
+  });
+
   it('returns the an AuthResponse on successful authentication', async () => {
     jest.spyOn(User, 'scope').mockReturnValue(User);
     jest.spyOn(User, 'findOne').mockResolvedValue(new User());
     jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
 
-    const returnedVal = await resolver.login('user@test.com', 'password');
+    const returnedVal = await resolver.login(
+      'user@test.com',
+      'password',
+      context,
+    );
     expect(returnedVal).toBeInstanceOf(AuthResponse);
   });
   it('tries to retrieve the User from the database', async () => {
@@ -127,7 +140,7 @@ describe('User login', () => {
     // Empty catch since bcrypt validation will just fail.
     // We're just making sure the method is called.
     try {
-      await resolver.login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password', context);
     } catch (e) {}
 
     // Login method should be using the 'auth' scope
@@ -140,7 +153,7 @@ describe('User login', () => {
     // Empty catch since bcrypt validation will just fail.
     // We're just making sure the method is called.
     try {
-      await resolver.login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password', context);
     } catch (e) {}
     expect(bcryptVal).toHaveBeenCalled();
     expect(modelFind).toHaveBeenCalled();
@@ -151,7 +164,7 @@ describe('User login', () => {
     const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(new User());
     const bcryptVal = jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
     try {
-      await resolver.login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password', context);
     } catch (e) {
       expect(modelFind).toHaveBeenCalled();
       expect(bcryptVal).toHaveBeenCalled();
@@ -165,7 +178,7 @@ describe('User login', () => {
     const modelFind = jest.spyOn(User, 'findOne').mockResolvedValue(null);
 
     try {
-      await resolver.login('user@test.com', 'password');
+      await resolver.login('user@test.com', 'password', context);
     } catch (e) {
       expect(modelFind).toHaveBeenCalled();
       expect(e).toBeInstanceOf(UserError);
@@ -183,7 +196,11 @@ describe('User login', () => {
     const jwtSign = jest.spyOn(jwt, 'sign');
 
     // This should be a JWT
-    const returnedVal = await resolver.login('user@test.com', 'password');
+    const returnedVal = await resolver.login(
+      'user@test.com',
+      'password',
+      context,
+    );
 
     expect(bcryptEval).toHaveBeenCalled();
 

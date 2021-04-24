@@ -1,5 +1,10 @@
 import { User } from '../../models';
-import { EmailError, PasswordError, UserError } from '../../lib';
+import {
+  createRefreshToken,
+  EmailError,
+  PasswordError,
+  UserError,
+} from '../../lib';
 import { createAuthToken } from '../../lib';
 
 import {
@@ -9,9 +14,11 @@ import {
   Resolver,
   Mutation,
   Arg,
+  Ctx,
 } from 'type-graphql';
 
 import bcrypt from 'bcrypt';
+import AppContext from '../../AppContext';
 
 @InputType()
 class UserSignupInput {
@@ -112,6 +119,7 @@ export class AuthResolver {
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
+    @Ctx() { res }: AppContext,
   ): Promise<AuthResponse> {
     const user = await User.scope('auth').findOne({ where: { email } });
     if (!user) {
@@ -121,9 +129,15 @@ export class AuthResolver {
     if (isMatch) {
       // login and sign a jwt
       const token = await createAuthToken(user);
+      const refreshToken = await createRefreshToken();
 
       // TODO Auth successful; send refresh token as cookie
       const authRes = new AuthResponse(token);
+      res.cookie('rf', refreshToken, {
+        httpOnly: true,
+        path: '/refresh_token',
+      });
+
       return authRes;
     } else {
       throw new PasswordError('Invalid password');
