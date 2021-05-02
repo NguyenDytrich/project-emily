@@ -1,28 +1,30 @@
-import { AuthChecker } from 'type-graphql';
+import { MiddlewareFn } from 'type-graphql';
 import AppContext from './AppContext';
 import jwt from 'jsonwebtoken';
 
-const authChecker: AuthChecker<AppContext> = ({
-  context: { req },
-}): boolean => {
+const authChecker: MiddlewareFn<AppContext> = ({ context }, next) => {
+  const { req } = context;
   const auth = req?.headers.authorization;
+
   if (!auth) {
-    return false;
+    throw new Error('No authorization provided');
   }
 
   const [scheme, token] = auth.split(' ');
 
   // Other authentication schemes not accepted
   if (scheme !== 'Bearer') {
-    return false;
+    throw new Error('Invalid authorization scheme');
   }
 
   try {
     jwt.verify(token, process.env.APP_SECRET ?? '');
-    return true;
   } catch (err) {
-    return false;
+    // Invalid token
+    throw new Error('Invalid token');
   }
+
+  return next();
 };
 
 export default authChecker;

@@ -240,9 +240,11 @@ describe('AuthChecker', () => {
 
     // Mock the request context
     const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
+    const next = jest.fn();
 
     // When jwt.verify succeeds, the request should be authorized
-    expect(AuthChecker(resolverData, [''])).toBe(true);
+    AuthChecker(resolverData, next);
+    expect(next).toHaveBeenCalled();
     expect(jwtVerify).toHaveBeenCalled();
   });
 
@@ -251,9 +253,16 @@ describe('AuthChecker', () => {
       throw new Error();
     });
     const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
+    const next = jest.fn();
 
-    expect(AuthChecker(resolverData, [''])).toBe(false);
-    expect(jwtVerify).toHaveBeenCalled();
+    expect.assertions(3);
+    try {
+      AuthChecker(resolverData, next);
+    } catch (err) {
+      expect(next).not.toHaveBeenCalled();
+      expect(jwtVerify).toHaveBeenCalled();
+      expect(err.message).toBe('Invalid token');
+    }
   });
 
   it('Returns false if the JWT is expired', () => {
@@ -262,18 +271,37 @@ describe('AuthChecker', () => {
     });
     const resolverData = createMockResolverData({ auth: 'Bearer asdfjkl' });
 
-    expect(AuthChecker(resolverData, [''])).toBe(false);
-    expect(jwtVerify).toHaveBeenCalled();
+    const next = jest.fn();
+    expect.assertions(3);
+    try {
+      AuthChecker(resolverData, next);
+    } catch (err) {
+      expect(next).not.toHaveBeenCalled();
+      expect(jwtVerify).toHaveBeenCalled();
+      expect(err.message).toBe('Invalid token');
+    }
   });
 
   it('Returns false if no auth is provided', () => {
     const resolverData = createMockResolverData();
-    expect(AuthChecker(resolverData, [''])).toBe(false);
+    const next = jest.fn();
+    expect.hasAssertions();
+    try {
+      AuthChecker(resolverData, next());
+    } catch (err) {
+      expect(err.message).toBe('No authorization provided');
+    }
   });
 
   it('Returns false if another auth scheme is provided', () => {
     const resolverData = createMockResolverData({ auth: 'Basic asdfjkl' });
-    expect(AuthChecker(resolverData, [''])).toBe(false);
+    const next = jest.fn();
+    expect.hasAssertions();
+    try {
+      AuthChecker(resolverData, next);
+    } catch (err) {
+      expect(err.message).toBe('Invalid authorization scheme');
+    }
   });
 });
 
