@@ -1,5 +1,5 @@
 import { MiddlewareFn } from 'type-graphql';
-import AppContext from './AppContext';
+import AppContext, { JwtPayload } from './AppContext';
 import jwt from 'jsonwebtoken';
 
 const authChecker: MiddlewareFn<AppContext> = ({ context }, next) => {
@@ -18,7 +18,8 @@ const authChecker: MiddlewareFn<AppContext> = ({ context }, next) => {
   }
 
   try {
-    jwt.verify(token, process.env.APP_SECRET ?? '');
+    const payload = jwt.verify(token, process.env.APP_SECRET ?? '');
+    context.payload = payload as JwtPayload;
   } catch (err) {
     // Invalid token
     throw new Error('Invalid token');

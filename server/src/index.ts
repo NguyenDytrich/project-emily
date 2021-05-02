@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { initialize, User } from './models';
-import authChecker from './AuthChecker';
 import { resolvers } from './resolvers';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
@@ -27,7 +26,6 @@ dotenv.config();
   // Build the schema
   const schema = await buildSchema({
     resolvers,
-    authChecker,
   });
 
   // Express configuration

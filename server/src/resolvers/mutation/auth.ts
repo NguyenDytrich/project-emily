@@ -6,9 +6,12 @@ import {
   UserError,
 } from '../../lib';
 import { createAuthToken } from '../../lib';
+import AuthChecker from '../../AuthChecker';
 
 import {
+  Query,
   ObjectType,
+  UseMiddleware,
   InputType,
   Field,
   Resolver,
@@ -111,6 +114,15 @@ export class AuthResolver {
       }
       throw e;
     }
+  }
+
+  // TODO: remove
+  // Just to test auth
+  @Query(() => String)
+  @UseMiddleware(AuthChecker)
+  testAuth(@Ctx() { payload }: AppContext): string {
+    console.log(payload);
+    return `Hello user ${payload?.userId ?? null}`;
   }
 
   /**
