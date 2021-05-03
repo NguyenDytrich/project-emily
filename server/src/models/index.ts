@@ -22,6 +22,8 @@ class User extends Model {
 
   @Field()
   public readonly updatedAt!: Date;
+
+  public sid!: string;
 }
 
 async function initialize(url: string): Promise<void> {
@@ -58,18 +60,23 @@ async function initialize(url: string): Promise<void> {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      sid: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        unique: true,
+      },
     },
     {
       // No password on retrieval by default
       defaultScope: {
         attributes: {
-          exclude: ['password'],
+          exclude: ['password', 'sid'],
         },
       },
       scopes: {
         auth: {
           attributes: {
-            include: ['password'],
+            include: ['password', 'sid'],
           },
         },
       },
