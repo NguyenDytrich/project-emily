@@ -10,12 +10,16 @@ import {
 import { EmailError, PasswordError, UserError } from '../../src/lib';
 import AuthChecker from '../../src/AuthChecker';
 import { createMockResolverData } from '../utils';
-import { createAuthToken, createRefreshToken } from '../../src/lib';
+import {
+  createAuthToken,
+  createRefreshToken,
+  validateTokenPair,
+} from '../../src/lib';
 import AppContext from '../../src/AppContext';
 
 // 3rd parties
 import bcrypt from 'bcrypt';
-import { TokenExpiredError } from 'jsonwebtoken';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
 
@@ -337,6 +341,51 @@ describe('Token generation', () => {
 });
 
 describe('Refresh token', () => {
+  it('Validates a token pair', () => {
+    const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+      return { key: 'val' };
+    });
+
+    const result = validateTokenPair('refreshToken', 'accessToken');
+    expect(result).toBe(true);
+
+    expect(jwtVerify.mock.calls.length).toBe(2);
+    expect(jwtVerify.mock.calls[0][0]).toBe('refreshToken');
+
+    // The second method call should validate our accessToken, ignoring the exp.
+    expect(jwtVerify.mock.calls[1][0]).toBe('accessToken');
+    expect(jwtVerify.mock.calls[1][2]).toEqual({ ignoreExpiration: true });
+  });
+
+  it('Returns false if refresh token is invalid', () => {
+    const jwtVerify = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+      throw new JsonWebTokenError('');
+    });
+
+    const result = validateTokenPair('refreshToken', 'accessToken');
+    expect(result).toBe(false);
+    // Method should have exited as soon as jwt.verify fails
+    expect(jwtVerify.mock.calls.length).toBe(1);
+  });
+
+  it('Returns false if access token is invalid', () => {
+    const jwtVerify = jest
+      .spyOn(jwt, 'verify')
+      .mockImplementationOnce(() => {
+        return { key: 'val' };
+      })
+      .mockImplementation(() => {
+        throw new JsonWebTokenError('');
+      });
+
+    const result = validateTokenPair('refreshToken', 'accessToken');
+    expect(result).toBe(false);
+    // Method should have exited as soon as jwt.verify fails
+    expect(jwtVerify.mock.calls.length).toBe(2);
+    expect(jwtVerify.mock.calls[0][0]).toBe('refreshToken');
+    expect(jwtVerify.mock.calls[1][0]).toBe('accessToken');
+  });
+
   it.todo('Returns nothing when passed an invalid refresh token');
   it.todo('Returns a valid JWT access token when passed a valid refresh token');
 });

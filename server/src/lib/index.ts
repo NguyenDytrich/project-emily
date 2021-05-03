@@ -56,6 +56,25 @@ export async function validateRefreshToken(
   }
 }
 
+export function validateTokenPair(refresh: string, access: string): boolean {
+  try {
+    jwt.verify(refresh, process.env.REFRESH_SECRET ?? '');
+    jwt.verify(access, process.env.APP_SECRET ?? '', {
+      ignoreExpiration: true,
+    });
+    // If refresh and access are valid tokens...
+    return true;
+
+    // TODO?
+    // find a refresh payload by uuid
+    // refreshPayload.uuid
+    // then verify the accessPayload.userId against it ?
+    // this can be cached in Redis as application scales
+  } catch (err) {
+    return false;
+  }
+}
+
 export const REFRESH_TOKEN_KEY = 'rftid';
 
 export function setRefreshToken(res: Response, token: string): void {
