@@ -21,6 +21,7 @@ import AppContext from '../../src/AppContext';
 import bcrypt from 'bcrypt';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import { UniqueConstraintError, ValidationErrorItem } from 'sequelize';
 
 // Config test environment
@@ -31,6 +32,7 @@ import { mocked } from 'ts-jest/utils';
 
 // Test suite
 jest.mock('../../src/models');
+jest.mock('uuid');
 
 let resolver: AuthResolver;
 
@@ -325,18 +327,44 @@ describe('Token generation', () => {
 
     expect(payload.userId).toEqual(user.id);
   });
-  it('Signs refresh tokens with a different secret', async () => {
+  it('Signs refresh tokens with a different secret and rotates the refresh UUID', async () => {
     const user = new User();
     user.id = 1;
+    user.sid = 'mocksid';
     const jwtSign = jest.spyOn(jwt, 'sign');
     const token = await createRefreshToken(user);
+    const save = jest.spyOn(user, 'save');
 
     expect(jwtSign).toHaveBeenCalled();
+    expect(save).toHaveBeenCalled();
+
     const payload = (await jwt.verify(
       token,
       process.env.REFRESH_SECRET ?? '',
     )) as RefreshPayload;
-    expect(payload.userId).toEqual(user.id);
+    expect(payload.uuid).not.toEqual('mocksid');
+  });
+  it("Creates a new UUID if the user doesn't have a SID", async () => {
+    const user = new User();
+    user.id = 1;
+    user.sid = null;
+
+    const jwtSign = jest.spyOn(jwt, 'sign');
+    const v4 = uuidv4 as jest.MockedFunction<typeof uuidv4>;
+    v4.mockImplementationOnce(() => {
+      return 'mockuuid';
+    });
+    const token = await createRefreshToken(user);
+
+    expect(v4).toHaveBeenCalled();
+    expect(jwtSign).toHaveBeenCalled();
+
+    const payload = (await jwt.verify(
+      token,
+      process.env.REFRESH_SECRET ?? '',
+    )) as RefreshPayload;
+
+    expect(payload.uuid).toBe('mockuuid');
   });
 });
 

@@ -23,7 +23,7 @@ class User extends Model {
   @Field()
   public readonly updatedAt!: Date;
 
-  public sid!: string;
+  public sid!: string | null;
 }
 
 async function initialize(url: string): Promise<void> {

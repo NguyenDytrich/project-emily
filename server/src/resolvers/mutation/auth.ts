@@ -57,6 +57,7 @@ export interface AuthPayload {
 export interface RefreshPayload {
   userId: string;
   tokenId: string;
+  uuid: string;
 }
 
 @Resolver()

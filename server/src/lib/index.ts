@@ -2,6 +2,7 @@ import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
 import { AuthPayload, RefreshPayload } from '../resolvers/mutation/auth';
+import { v4 as uuidv4 } from 'uuid';
 
 export class EmailError extends Error {
   constructor(message: string) {
@@ -33,27 +34,26 @@ export async function createAuthToken(user: User): Promise<string> {
   return token;
 }
 
+/**
+ * Creates a new refresh token for user and assigns it a UUID
+ */
 export async function createRefreshToken(user: User): Promise<string> {
   const expiresIn = process.env.REFRESH_TOKEN_LIFETIME ?? '7d';
+  const sid = uuidv4();
+
+  // TODO: Not entirely sure what problems will come up
+  // with this implementation of access-refresh tokens.
+  user.sid = sid;
+  await user.save();
+
   const token = await jwt.sign(
     {
-      userId: user.id,
+      uuid: sid,
       expiresIn,
     },
     process.env.REFRESH_SECRET ?? '',
   );
   return token;
-}
-
-export async function validateRefreshToken(
-  jot: string,
-): Promise<RefreshPayload> {
-  try {
-    const payload = await jwt.verify(jot, process.env.REFRESH_SECRET ?? '');
-    return payload as RefreshPayload;
-  } catch (err) {
-    throw err;
-  }
 }
 
 /**
@@ -83,6 +83,7 @@ export function validateTokenPair(
     const accessPayload = jwt.verify(access, process.env.APP_SECRET ?? '', {
       ignoreExpiration: true,
     }) as AuthPayload;
+
     // If refresh and access are valid tokens...
     return {
       valid: true,

@@ -11,9 +11,9 @@ import {
   createAuthToken,
   createRefreshToken,
   setRefreshToken,
-  validateRefreshToken,
+  validateTokenPair,
 } from './lib';
-import { AuthResponse, RefreshPayload } from './resolvers/mutation/auth';
+import { AuthResponse } from './resolvers/mutation/auth';
 
 dotenv.config();
 
@@ -42,16 +42,30 @@ dotenv.config();
   app.get('/refresh_token', async (req, res) => {
     // Validate the refresh token
     const refreshToken: string | null = req.cookies.rftid;
-    if (!refreshToken) {
+    const accessToken = req.headers['authorization']?.split(' ')[1] ?? null;
+
+    // Need to have both refresh and an expired access token
+    if (!refreshToken || !accessToken) {
       return res.sendStatus(403);
     }
-    try {
-      const payload: RefreshPayload = await validateRefreshToken(refreshToken);
-      const user = await User.findByPk(payload.userId);
-      if (!user) {
-        return res.sendStatus(404);
-      }
 
+    const { valid, refreshPayload, accessPayload } = validateTokenPair(
+      refreshToken,
+      accessToken,
+    );
+
+    if (!valid || !refreshPayload || !accessPayload) {
+      return res.sendStatus(403);
+    }
+
+    // TODO: this is validation logic. This can go into validateTokenPair?
+    // TODO: Can maybe use caching in future to scale?
+    const user = await User.scope('auth').findByPk(accessPayload.userId);
+    if (!user) {
+      return res.sendStatus(404);
+    }
+
+    if (user.sid == refreshPayload.uuid) {
       // if the refresh token is valid, and the payload identifier is valid
       // then send a new auth token and refresh token.
       const authToken = await createAuthToken(user);
@@ -60,7 +74,7 @@ dotenv.config();
       // Send our repsonses
       setRefreshToken(res, newRefreshToken);
       return res.send(JSON.stringify(new AuthResponse(authToken)));
-    } catch (err) {
+    } else {
       return res.sendStatus(403);
     }
   });
