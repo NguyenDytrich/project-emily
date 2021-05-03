@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
-import { RefreshPayload } from '../resolvers/mutation/auth';
+import { AuthPayload, RefreshPayload } from '../resolvers/mutation/auth';
 
 export class EmailError extends Error {
   constructor(message: string) {
@@ -56,14 +56,39 @@ export async function validateRefreshToken(
   }
 }
 
-export function validateTokenPair(refresh: string, access: string): boolean {
+/**
+ * Verifies a refresh token and access token pair, ignoring the expiration of
+ * the access token. This method serves to validate that both tokens originated
+ * from our server when refreshing tokens.
+ * @param {string} refresh A JWT token signed with the REFRESH_SECRET
+ * @param {string} access A JWT token signed with the APP_SECRET
+ * @returns {boolean} valid Whether or not the tokens are valid
+ * @returns {RefreshPayload} refreshPayload If the token is valid, returns the payload
+ * @returns {AuthPayload} refreshPayload If the token is valid, returns the payload
+ */
+export function validateTokenPair(
+  refresh: string,
+  access: string,
+): {
+  valid: boolean;
+  accessPayload?: AuthPayload;
+  refreshPayload?: RefreshPayload;
+} {
   try {
-    jwt.verify(refresh, process.env.REFRESH_SECRET ?? '');
-    jwt.verify(access, process.env.APP_SECRET ?? '', {
+    const refreshPayload = jwt.verify(
+      refresh,
+      process.env.REFRESH_SECRET ?? '',
+    ) as RefreshPayload;
+
+    const accessPayload = jwt.verify(access, process.env.APP_SECRET ?? '', {
       ignoreExpiration: true,
-    });
+    }) as AuthPayload;
     // If refresh and access are valid tokens...
-    return true;
+    return {
+      valid: true,
+      refreshPayload,
+      accessPayload,
+    };
 
     // TODO?
     // find a refresh payload by uuid
@@ -71,7 +96,7 @@ export function validateTokenPair(refresh: string, access: string): boolean {
     // then verify the accessPayload.userId against it ?
     // this can be cached in Redis as application scales
   } catch (err) {
-    return false;
+    return { valid: false };
   }
 }
 

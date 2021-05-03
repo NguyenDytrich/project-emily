@@ -346,8 +346,8 @@ describe('Refresh token', () => {
       return { key: 'val' };
     });
 
-    const result = validateTokenPair('refreshToken', 'accessToken');
-    expect(result).toBe(true);
+    const { valid } = validateTokenPair('refreshToken', 'accessToken');
+    expect(valid).toBe(true);
 
     expect(jwtVerify.mock.calls.length).toBe(2);
     expect(jwtVerify.mock.calls[0][0]).toBe('refreshToken');
@@ -362,8 +362,8 @@ describe('Refresh token', () => {
       throw new JsonWebTokenError('');
     });
 
-    const result = validateTokenPair('refreshToken', 'accessToken');
-    expect(result).toBe(false);
+    const { valid } = validateTokenPair('refreshToken', 'accessToken');
+    expect(valid).toBe(false);
     // Method should have exited as soon as jwt.verify fails
     expect(jwtVerify.mock.calls.length).toBe(1);
   });
@@ -378,8 +378,8 @@ describe('Refresh token', () => {
         throw new JsonWebTokenError('');
       });
 
-    const result = validateTokenPair('refreshToken', 'accessToken');
-    expect(result).toBe(false);
+    const { valid } = validateTokenPair('refreshToken', 'accessToken');
+    expect(valid).toBe(false);
     // Method should have exited as soon as jwt.verify fails
     expect(jwtVerify.mock.calls.length).toBe(2);
     expect(jwtVerify.mock.calls[0][0]).toBe('refreshToken');
