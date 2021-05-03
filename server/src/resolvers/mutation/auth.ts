@@ -1,26 +1,27 @@
 import { User } from '../../models';
-import { InputType, Field, Resolver, Mutation, Arg } from 'type-graphql';
+import {
+  createRefreshToken,
+  EmailError,
+  PasswordError,
+  UserError,
+} from '../../lib';
+import { createAuthToken } from '../../lib';
+import AuthChecker from '../../AuthChecker';
+
+import {
+  Query,
+  ObjectType,
+  UseMiddleware,
+  InputType,
+  Field,
+  Resolver,
+  Mutation,
+  Arg,
+  Ctx,
+} from 'type-graphql';
 
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-
-export class EmailError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class PasswordError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class UserError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+import AppContext from '../../AppContext';
 
 @InputType()
 class UserSignupInput {
@@ -40,6 +41,25 @@ class UserSignupInput {
   passwordConf!: string;
 }
 
+@ObjectType()
+export class AuthResponse {
+  constructor(token: string) {
+    this.token = token;
+  }
+  @Field()
+  token!: string;
+}
+
+export interface AuthPayload {
+  userId: string;
+}
+
+export interface RefreshPayload {
+  userId: string;
+  tokenId: string;
+  uuid: string;
+}
+
 @Resolver()
 export class AuthResolver {
   /**
@@ -53,7 +73,7 @@ export class AuthResolver {
    * @throws {PasswordError} When the password does not match the confirmation
    * @throws {EmailError} When the email is not valid
    */
-  @Mutation((returns) => User)
+  @Mutation(() => User)
   async signup(@Arg('user') user: UserSignupInput): Promise<User> {
     const { fname, lname, email, password, passwordConf } = user;
 
@@ -97,6 +117,15 @@ export class AuthResolver {
     }
   }
 
+  // TODO: remove
+  // Just to test auth
+  @Query(() => String)
+  @UseMiddleware(AuthChecker)
+  testAuth(@Ctx() { payload }: AppContext): string {
+    console.log(payload);
+    return `Hello user ${payload?.userId ?? null}`;
+  }
+
   /**
    * Verifies a user's credentials, then creates a session and returns it.
    * @param {string} email User's email
@@ -104,11 +133,12 @@ export class AuthResolver {
    * @throws {UserError} When no user exists by provided credentials
    * @throws {PasswordError} When password does not match
    */
-  @Mutation((returns) => String)
+  @Mutation(() => AuthResponse)
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
-  ): Promise<string> {
+    @Ctx() { res }: AppContext,
+  ): Promise<AuthResponse> {
     const user = await User.scope('auth').findOne({ where: { email } });
     if (!user) {
       throw new UserError(`User doesn't exist for '${email}'`);
@@ -116,17 +146,17 @@ export class AuthResolver {
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       // login and sign a jwt
+      const token = await createAuthToken(user);
+      const refreshToken = await createRefreshToken(user);
 
-      // TODO: make configurable
-      const tokenLifetime = 300; // in seconds
-      const token = await jwt.sign(
-        {
-          userId: user.id,
-          exp: Math.floor(Date.now() / 1000) + tokenLifetime,
-        },
-        process.env.APP_SECRET ?? '',
-      );
-      return token;
+      // TODO Auth successful; send refresh token as cookie
+      const authRes = new AuthResponse(token);
+      res.cookie('rftid', refreshToken, {
+        httpOnly: true,
+        path: '/refresh_token',
+      });
+
+      return authRes;
     } else {
       throw new PasswordError('Invalid password');
     }
