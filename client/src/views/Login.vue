@@ -76,7 +76,7 @@ export default defineComponent({
     };
   },
   methods: {
-    setState(val? = 0) {
+    setState(val = 0) {
       this.view = val;
     },
   },
