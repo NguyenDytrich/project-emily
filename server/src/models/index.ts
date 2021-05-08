@@ -226,6 +226,7 @@ async function initialize(url: string): Promise<void> {
 
   CalendarEvent.belongsTo(User, {
     foreignKey: 'organizerId',
+    as: 'organizer',
   });
 
   // Sync new associations

@@ -9,6 +9,7 @@ export default class CalendarEventResolver {
       include: [
         { model: User, as: 'participants' },
         { model: User, as: 'attendees' },
+        { model: User, as: 'organizer' },
       ],
     });
     return events;
