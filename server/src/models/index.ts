@@ -26,6 +26,48 @@ class User extends Model {
   public sid!: string | null;
 }
 
+@ObjectType()
+class CalendarEvent extends Model {
+  @Field()
+  public id!: number;
+
+  // TODO can be an organizer or an organization?
+  @Field()
+  public organizer!: User;
+
+  @Field((type) => [User])
+  public participants!: User[];
+
+  @Field((type) => [User])
+  public attendees!: User[];
+
+  @Field()
+  public description!: string;
+
+  @Field()
+  public date!: number;
+
+  @Field()
+  public title!: string;
+}
+
+enum EventStatus {
+  Interested = 'interested',
+  Confirmed = 'confirmed',
+  Cancelled = 'cancelled',
+}
+
+class CalendarEventAttendees extends Model {
+  @Field()
+  public userId!: number;
+
+  @Field()
+  public eventId!: number;
+
+  @Field()
+  public status!: EventStatus;
+}
+
 async function initialize(url: string): Promise<void> {
   const sequelize = new Sequelize(url);
 
@@ -86,7 +128,67 @@ async function initialize(url: string): Promise<void> {
     },
   );
 
+  CalendarEvent.init(
+    {
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      date: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING,
+      },
+    },
+    {
+      sequelize,
+      underscored: true,
+    },
+  );
+
+  CalendarEventAttendees.init(
+    {
+      userId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: User,
+          key: 'id',
+        },
+      },
+      eventId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: CalendarEvent,
+          key: 'id',
+        },
+      },
+      status: {
+        type: DataTypes.ENUM('interested', 'confirmed', 'cancelled'),
+        defaultValue: 'interested',
+      },
+    },
+    {
+      sequelize,
+      underscored: true,
+    },
+  );
+
+  // Development
   await User.sync({ force: true });
+  await CalendarEvent.sync({ force: true });
+  await CalendarEventAttendees.sync({ force: true });
+
+  CalendarEvent.belongsToMany(User, { through: 'CalendarEventParticipants' });
+  User.belongsToMany(CalendarEvent, { through: 'CalendarEventParticipants' });
+
+  CalendarEvent.belongsToMany(User, { through: CalendarEventAttendees });
+  User.belongsToMany(CalendarEvent, { through: CalendarEventAttendees });
+
+  CalendarEvent.belongsTo(User, {
+    foreignKey: 'organizerId',
+  });
 }
 
 export { initialize, User };
