@@ -1,4 +1,11 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import {
+  Sequelize,
+  DataTypes,
+  Model,
+  HasManyGetAssociationsMixin,
+  HasManyAddAssociationsMixin,
+  HasManyCreateAssociationMixin,
+} from 'sequelize';
 import { ObjectType, Field } from 'type-graphql';
 
 @ObjectType()
@@ -24,6 +31,8 @@ class User extends Model {
   public readonly updatedAt!: Date;
 
   public sid!: string | null;
+
+  public createCalendarEvent!: HasManyCreateAssociationMixin<CalendarEvent>;
 }
 
 @ObjectType()
@@ -49,6 +58,12 @@ class CalendarEvent extends Model {
 
   @Field()
   public title!: string;
+
+  public getParticipants!: HasManyGetAssociationsMixin<User>;
+  public addParticipant!: HasManyAddAssociationsMixin<User, number>;
+
+  public getAttendees!: HasManyGetAssociationsMixin<User>;
+  public addAttendee!: HasManyAddAssociationsMixin<User, number>;
 }
 
 enum EventStatus {
@@ -69,8 +84,11 @@ class CalendarEventParticipants extends Model {
   public confirmed!: boolean;
 }
 
-async function initialize(url: string): Promise<void> {
-  const sequelize = new Sequelize(url);
+async function initialize(
+  url: string,
+  logging?: boolean | (() => void),
+): Promise<Sequelize> {
+  const sequelize = new Sequelize(url, { logging });
 
   try {
     await sequelize.authenticate();
@@ -141,6 +159,13 @@ async function initialize(url: string): Promise<void> {
       },
       description: {
         type: DataTypes.STRING,
+      },
+      organizerId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: User,
+          key: 'id',
+        },
       },
     },
     {
@@ -225,14 +250,22 @@ async function initialize(url: string): Promise<void> {
   User.belongsToMany(CalendarEvent, { through: CalendarEventAttendees });
 
   CalendarEvent.belongsTo(User, {
-    foreignKey: 'organizerId',
     as: 'organizer',
+    foreignKey: 'organizer_id',
+    targetKey: 'id',
+  });
+  User.hasMany(CalendarEvent, {
+    as: 'organized_events',
+    sourceKey: 'id',
+    foreignKey: 'organizer_id',
   });
 
   // Sync new associations
   await User.sync({ force: true });
   await CalendarEvent.sync({ force: true });
   await CalendarEventAttendees.sync({ force: true });
+
+  return sequelize;
 }
 
 export { initialize, User, CalendarEvent };
