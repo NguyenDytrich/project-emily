@@ -58,14 +58,15 @@ enum EventStatus {
 }
 
 class CalendarEventAttendees extends Model {
-  @Field()
   public userId!: number;
-
-  @Field()
   public eventId!: number;
-
-  @Field()
   public status!: EventStatus;
+}
+
+class CalendarEventParticipants extends Model {
+  public userId!: number;
+  public eventId!: number;
+  public confirmed!: boolean;
 }
 
 async function initialize(url: string): Promise<void> {
@@ -175,20 +176,62 @@ async function initialize(url: string): Promise<void> {
     },
   );
 
+  CalendarEventParticipants.init(
+    {
+      userId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: User,
+          key: 'id',
+        },
+      },
+      eventId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: CalendarEvent,
+          key: 'id',
+        },
+      },
+      confirmed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+    },
+    {
+      sequelize,
+      underscored: true,
+    },
+  );
+
   // Development
   await User.sync({ force: true });
   await CalendarEvent.sync({ force: true });
   await CalendarEventAttendees.sync({ force: true });
+  await CalendarEventParticipants.sync({ force: true });
 
-  CalendarEvent.belongsToMany(User, { through: 'CalendarEventParticipants' });
-  User.belongsToMany(CalendarEvent, { through: 'CalendarEventParticipants' });
+  // Associations
+  CalendarEvent.belongsToMany(User, {
+    as: 'participants',
+    through: CalendarEventParticipants,
+    foreignKey: 'event_id',
+  });
+  User.belongsToMany(CalendarEvent, { through: CalendarEventParticipants });
 
-  CalendarEvent.belongsToMany(User, { through: CalendarEventAttendees });
+  CalendarEvent.belongsToMany(User, {
+    as: 'attendees',
+    through: CalendarEventAttendees,
+    foreignKey: 'event_id',
+  });
   User.belongsToMany(CalendarEvent, { through: CalendarEventAttendees });
 
   CalendarEvent.belongsTo(User, {
     foreignKey: 'organizerId',
   });
+
+  // Sync new associations
+  await User.sync({ force: true });
+  await CalendarEvent.sync({ force: true });
+  await CalendarEventAttendees.sync({ force: true });
 }
 
-export { initialize, User };
+export { initialize, User, CalendarEvent };
