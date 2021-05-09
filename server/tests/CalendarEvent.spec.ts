@@ -1,8 +1,15 @@
 import 'reflect-metadata';
 
 import { Sequelize } from 'sequelize';
-import { initialize, User, CalendarEvent } from '../src/models';
+import {
+  initialize,
+  User,
+  CalendarEvent,
+  CalendarEventAttendees,
+} from '../src/models';
 import CalendarEventResolver from '../src/resolvers/CalendarEventResolver';
+
+import { createMockResolverData } from './utils';
 
 import bcrypt from 'bcrypt';
 
@@ -47,6 +54,23 @@ afterAll(async () => {
   sequelize.close();
 });
 
+describe('Create association', () => {
+  it('should be created correctly with User.createCalendarEvent', async () => {
+    const eventDate = new Date();
+    await users[0].createCalendarEvent({
+      title: 'Test event',
+      description: 'A test event',
+      date: eventDate,
+    });
+    const event = await CalendarEvent.findOne();
+    expect(event).not.toBe(null);
+    if (event !== null) {
+      expect(event.organizerId).toEqual(users[0].id);
+      expect(event.date).toEqual(eventDate);
+    }
+  });
+});
+
 describe('Calendar Resolver', () => {
   const resolver = new CalendarEventResolver();
 
@@ -58,8 +82,8 @@ describe('Calendar Resolver', () => {
       date: new Date(),
     });
 
-    await event.addParticipant([users[0]]);
-    await event.addAttendee([users[1]]);
+    await event.addParticipant(users[0]);
+    await event.addAttendee(users[1]);
 
     await event.save();
 
@@ -72,5 +96,47 @@ describe('Calendar Resolver', () => {
     expect(events[0].attendees[0].id).toBe(users[1].id);
 
     expect(events[0].organizer.id).toBe(users[0].id);
+  });
+
+  it('should create a CalendarEvent with correct relationship', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[0].id },
+    });
+    const event = await resolver.createEvent(
+      {
+        title: 'Hello world',
+        description: 'a test event',
+        date: new Date(),
+      },
+      resolverData.context,
+    );
+    expect(event.organizerId).toEqual(users[0].id);
+  });
+
+  it.todo('returns meaningful error when no user is found');
+  it('should create an confirmed attendance record', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[1].id },
+    });
+    const event = await CalendarEvent.findOne();
+
+    if (!event) throw new Error('no events found');
+
+    const res = await resolver.attendCalendarEvent(
+      event.id,
+      resolverData.context,
+    );
+    const record = await CalendarEventAttendees.findOne({
+      where: {
+        userId: users[1].id,
+        eventId: event.id,
+      },
+    });
+
+    if (!record) throw new Error('no attendance record found');
+
+    expect(res).toBe('OK');
+    expect(record).not.toBe(null);
+    expect(record.status).toBe('confirmed');
   });
 });

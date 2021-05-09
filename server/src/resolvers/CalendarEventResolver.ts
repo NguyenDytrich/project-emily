@@ -1,5 +1,33 @@
-import { Resolver, Query } from 'type-graphql';
-import { User, CalendarEvent } from '../models';
+import {
+  Resolver,
+  Query,
+  Arg,
+  UseMiddleware,
+  Mutation,
+  Ctx,
+  Field,
+  InputType,
+} from 'type-graphql';
+import AppContext from '../AppContext';
+import AuthChecker from '../AuthChecker';
+import {
+  User,
+  CalendarEvent,
+  CalendarEventAttendees,
+  AttendeeStatus,
+} from '../models';
+
+@InputType()
+class EventDetailsInput {
+  @Field()
+  public title!: string;
+
+  @Field()
+  public description!: string;
+
+  @Field()
+  public date!: Date;
+}
 
 @Resolver()
 export default class CalendarEventResolver {
@@ -13,5 +41,44 @@ export default class CalendarEventResolver {
       ],
     });
     return events;
+  }
+
+  @Mutation(() => CalendarEvent)
+  @UseMiddleware(AuthChecker)
+  async createEvent(
+    @Arg('details') details: EventDetailsInput,
+    @Ctx() ctx: AppContext,
+  ): Promise<CalendarEvent> {
+    const user = await User.findByPk(ctx.payload?.userId);
+    if (!user) {
+      // TODO throw a descriptive error
+      throw new Error();
+    }
+    const event = await user.createCalendarEvent(details);
+    return event;
+  }
+
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async attendCalendarEvent(
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    // TODO repeteating code. Replace.
+    const user = await User.findByPk(ctx.payload?.userId);
+    if (!user) {
+      // TODO throw descriptive error
+      throw new Error();
+    }
+    const event = await CalendarEvent.findByPk(eventId);
+    if (!event) throw new Error();
+    await event.addAttendee(user);
+    const record = await CalendarEventAttendees.findOne({
+      where: { userId: user.id, eventId: event.id },
+    });
+    if (!record) throw new Error(); // TODO
+    record.status = AttendeeStatus.Confirmed;
+    await record.save();
+    return 'OK';
   }
 }

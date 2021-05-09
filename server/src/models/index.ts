@@ -3,10 +3,17 @@ import {
   DataTypes,
   Model,
   HasManyGetAssociationsMixin,
-  HasManyAddAssociationsMixin,
-  HasManyCreateAssociationMixin,
+  HasManyAddAssociationMixin,
 } from 'sequelize';
 import { ObjectType, Field } from 'type-graphql';
+
+interface CreateEventArgs {
+  participants?: User[];
+  attendees?: User[];
+  title: string;
+  description: string;
+  date: Date;
+}
 
 @ObjectType()
 class User extends Model {
@@ -32,7 +39,34 @@ class User extends Model {
 
   public sid!: string | null;
 
-  public createCalendarEvent!: HasManyCreateAssociationMixin<CalendarEvent>;
+  public async createCalendarEvent(
+    args: CreateEventArgs,
+  ): Promise<CalendarEvent> {
+    const { title, description, date, participants, attendees } = args;
+
+    // TODO wrap in a transaction
+    const event = await CalendarEvent.create({
+      organizerId: this.id,
+      title,
+      description,
+      date,
+    });
+
+    if (participants && participants.length > 0) {
+      for (const p of participants) {
+        await event.addParticipant(p);
+      }
+    }
+
+    if (attendees && attendees.length > 0) {
+      for (const a of attendees) {
+        await event.addAttendee(a);
+      }
+    }
+
+    await event.save();
+    return event;
+  }
 }
 
 @ObjectType()
@@ -59,26 +93,28 @@ class CalendarEvent extends Model {
   @Field()
   public title!: string;
 
+  public organizerId!: number;
+
   public getParticipants!: HasManyGetAssociationsMixin<User>;
-  public addParticipant!: HasManyAddAssociationsMixin<User, number>;
+  public addParticipant!: HasManyAddAssociationMixin<User, number>;
 
   public getAttendees!: HasManyGetAssociationsMixin<User>;
-  public addAttendee!: HasManyAddAssociationsMixin<User, number>;
+  public addAttendee!: HasManyAddAssociationMixin<User, number>;
 }
 
-enum EventStatus {
+export enum AttendeeStatus {
   Interested = 'interested',
   Confirmed = 'confirmed',
   Cancelled = 'cancelled',
 }
 
-class CalendarEventAttendees extends Model {
+export class CalendarEventAttendees extends Model {
   public userId!: number;
   public eventId!: number;
-  public status!: EventStatus;
+  public status!: AttendeeStatus;
 }
 
-class CalendarEventParticipants extends Model {
+export class CalendarEventParticipants extends Model {
   public userId!: number;
   public eventId!: number;
   public confirmed!: boolean;

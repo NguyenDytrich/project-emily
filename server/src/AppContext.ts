@@ -7,5 +7,5 @@ export default class AppContext {
 }
 
 export class JwtPayload {
-  userId!: string;
+  userId!: string | number;
 }
