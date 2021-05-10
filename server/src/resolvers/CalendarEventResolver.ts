@@ -81,4 +81,25 @@ export default class CalendarEventResolver {
     await record.save();
     return 'OK';
   }
+
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async addCalendarEventParticipant(
+    @Arg('userId') addUserId: number,
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    const addUser = await User.findByPk(addUserId);
+    if (!addUser) throw new Error();
+    const event = await CalendarEvent.findByPk(eventId);
+    if (!event) throw new Error();
+
+    if (event.organizerId !== ctx.payload?.userId) {
+      throw new Error('Unauthorized');
+    }
+
+    await event.addParticipant(addUser);
+    await event.save();
+    return 'OK';
+  }
 }

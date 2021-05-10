@@ -114,6 +114,7 @@ describe('Calendar Resolver', () => {
   });
 
   it.todo('returns meaningful error when no user is found');
+
   it('should create an confirmed attendance record', async () => {
     const resolverData = createMockResolverData({
       payload: { userId: users[1].id },
@@ -138,5 +139,61 @@ describe('Calendar Resolver', () => {
     expect(res).toBe('OK');
     expect(record).not.toBe(null);
     expect(record.status).toBe('confirmed');
+  });
+
+  it('should create a partcipant record', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[1].id },
+    });
+
+    const event = await users[1].createCalendarEvent({
+      title: 'Test event',
+      description: 'A test event',
+      date: new Date(),
+    });
+
+    const res = await resolver.addCalendarEventParticipant(
+      users[0].id,
+      event.id,
+      resolverData.context,
+    );
+
+    const db = await CalendarEvent.findOne({
+      where: { id: event.id },
+      include: [{ model: User, as: 'participants' }],
+    });
+
+    expect(res).toBe('OK');
+    expect(db).not.toBe(null);
+    expect(db?.participants.length).toBe(1);
+  });
+
+  it('should reject adding a participant unless being added by the organizer', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[1].id },
+    });
+
+    const event = await users[0].createCalendarEvent({
+      title: 'Test event',
+      description: 'A test event',
+      date: new Date(),
+    });
+
+    expect.hasAssertions();
+    try {
+      await resolver.addCalendarEventParticipant(
+        users[1].id,
+        event.id,
+        resolverData.context,
+      );
+    } catch (err) {
+      expect(err.message).toBe('Unauthorized');
+
+      const db = await CalendarEvent.findOne({
+        where: { id: event.id },
+        include: [{ model: User, as: 'participants' }],
+      });
+      expect(db?.participants.length).toBe(0);
+    }
   });
 });
