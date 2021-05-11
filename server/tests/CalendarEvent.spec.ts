@@ -327,4 +327,20 @@ describe('Calendar Resolver', () => {
       expect(_event).not.toBe(null);
     }
   });
+
+  it('should return all events owned by the user', async () => {
+    for (let i = 0; i < 5; i++) {
+      await users[2].createCalendarEvent({
+        title: `Test event ${i}`,
+        description: 'A test event',
+        date: new Date(),
+      });
+    }
+    const { context } = createMockResolverData({
+      payload: { userId: users[2].id },
+    });
+
+    const res = await resolver.myEvents(context);
+    expect(res.length).toEqual(5);
+  });
 });

@@ -47,6 +47,22 @@ export default class CalendarEventResolver {
   }
 
   /**
+   * @returns a list of current user's calendar events.
+   */
+  async myEvents(@Ctx() ctx: AppContext): Promise<CalendarEvent[]> {
+    const events = await CalendarEvent.findAll({
+      where: {
+        organizerId: ctx.payload?.userId,
+      },
+      include: [
+        { model: User, as: 'participants' },
+        { model: User, as: 'attendees' },
+      ],
+    });
+    return events;
+  }
+
+  /**
    * Creates a new event owned by the context's user
    * @param {string} Title the event's title
    * @param {string} description The event's description
