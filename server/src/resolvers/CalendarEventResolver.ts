@@ -68,6 +68,27 @@ export default class CalendarEventResolver {
   }
 
   /**
+   * Deletes an event owned by the current user
+   * @param {number} eventId The event's ID
+   */
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async deleteEvent(
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    const event = await CalendarEvent.findByPk(eventId);
+    if (!event) throw new Error('No event found');
+    if (ctx.payload?.userId != event.organizerId) {
+      // TODO Log attempt?
+      throw new Error('Unauthorized');
+    } else {
+      await event.destroy();
+      return 'OK';
+    }
+  }
+
+  /**
    * Adds the current user to a list of attendees for an event. They will be marked as 'confirmed'.
    * @param {number} eventId the id of the event
    */

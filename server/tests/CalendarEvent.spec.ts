@@ -292,4 +292,39 @@ describe('Calendar Resolver', () => {
     expect(event?.attendees.length).toEqual(len);
     expect(attendance?.status).toBe('interest_cancelled');
   });
+
+  it('should delete an event', async () => {
+    const event = await users[0].createCalendarEvent({
+      title: 'Test event',
+      description: 'A test event',
+      date: new Date(),
+    });
+    const { context } = createMockResolverData({
+      payload: { userId: users[0].id },
+    });
+
+    const res = await resolver.deleteEvent(event.id, context);
+    const _event = await CalendarEvent.findByPk(event.id);
+
+    expect(res).toBe('OK');
+    expect(_event).toBe(null);
+  });
+
+  it('should throw an error if attempting to delete an unowned event', async () => {
+    const event = await CalendarEvent.findOne();
+    const { context } = createMockResolverData({
+      payload: { userId: users[2].id },
+    });
+    if (!event) throw new Error('No events');
+
+    expect.hasAssertions();
+    try {
+      await resolver.deleteEvent(event.id, context);
+    } catch (err) {
+      const _event = await CalendarEvent.findByPk(event.id);
+
+      expect(err.message).toBe('Unauthorized');
+      expect(_event).not.toBe(null);
+    }
+  });
 });
