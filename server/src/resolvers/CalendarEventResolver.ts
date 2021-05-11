@@ -123,4 +123,22 @@ export default class CalendarEventResolver {
     await event.save();
     return 'OK';
   }
+
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async unattendCalendarEvent(
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    const attendance = await CalendarEventAttendees.findOne({
+      where: {
+        eventId,
+        userId: ctx.payload?.userId,
+      },
+    });
+    if (!attendance) throw new Error('Not found');
+    attendance.status = AttendeeStatus.Cancelled;
+    await attendance.save();
+    return 'OK';
+  }
 }

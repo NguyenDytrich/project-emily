@@ -196,4 +196,39 @@ describe('Calendar Resolver', () => {
       expect(db?.participants.length).toBe(0);
     }
   });
+
+  it('should remove an attendee', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[1].id },
+    });
+
+    const _event = await users[0].createCalendarEvent({
+      title: 'Remove attendee test',
+      description: 'test event',
+      date: new Date(),
+      attendees: [users[1]],
+    });
+
+    const res = await resolver.unattendCalendarEvent(
+      _event.id,
+      resolverData.context,
+    );
+    const event = await CalendarEvent.findByPk(_event.id, {
+      include: [
+        {
+          model: User,
+          as: 'attendees',
+          through: { where: { status: 'confirmed' } },
+        },
+      ],
+    });
+    const attendance = await CalendarEventAttendees.findOne({
+      where: { eventId: _event.id, userId: users[1].id },
+    });
+
+    expect(res).toBe('OK');
+    expect(event?.attendees.length).toBe(0);
+    expect(attendance).not.toBe(null);
+    expect(attendance?.status).toBe('cancelled');
+  });
 });
