@@ -48,6 +48,14 @@ beforeAll(async () => {
     password: password,
   });
   users.push(user);
+
+  user = await User.create({
+    fname: 'Tester',
+    lname: 'Userer',
+    email: 'testuser3@test.com',
+    password: password,
+  });
+  users.push(user);
 });
 
 afterAll(async () => {
@@ -113,9 +121,9 @@ describe('Calendar Resolver', () => {
     expect(event.organizerId).toEqual(users[0].id);
   });
 
-  it.todo('returns meaningful error when no user is found');
+  it.todo('returns meaningful error when no user or event is found');
 
-  it('should create an confirmed attendance record', async () => {
+  it('should create a confirmed attendance record', async () => {
     const resolverData = createMockResolverData({
       payload: { userId: users[1].id },
     });
@@ -230,5 +238,31 @@ describe('Calendar Resolver', () => {
     expect(event?.attendees.length).toBe(0);
     expect(attendance).not.toBe(null);
     expect(attendance?.status).toBe('cancelled');
+  });
+
+  it('should add a User as an interested attendant', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[2].id },
+    });
+
+    const event = await CalendarEvent.findOne({
+      include: [{ model: User, as: 'attendees' }],
+    });
+
+    if (!event) throw new Error('no event found');
+    const len = event.attendees.length;
+
+    const res = await resolver.interestCalendarEvent(
+      event.id,
+      resolverData.context,
+    );
+    const attendance = await CalendarEventAttendees.findOne({
+      where: { eventId: event.id, userId: users[2].id },
+    });
+    await event.reload();
+
+    expect(res).toBe('OK');
+    expect(event?.attendees.length).toEqual(len + 1);
+    expect(attendance?.status).toBe('interested');
   });
 });

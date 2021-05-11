@@ -141,4 +141,33 @@ export default class CalendarEventResolver {
     await attendance.save();
     return 'OK';
   }
+
+  /**
+   * Marks a user as interested in an event.
+   * @param {number} eventId The ID of the event to show interest in
+   * @returns {string} 'OK' on successfull operation
+   */
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async interestCalendarEvent(
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    const event = await CalendarEvent.findByPk(eventId);
+    if (!event) throw new Error('No event found');
+
+    await event.addAttendee(ctx.payload?.userId as number);
+    const attendance = await CalendarEventAttendees.findOne({
+      where: {
+        eventId,
+        userId: ctx.payload?.userId,
+      },
+    });
+    // TODO better errors
+    if (!attendance) throw new Error('Not found');
+    attendance.status = AttendeeStatus.Interested;
+    await attendance.save();
+
+    return 'OK';
+  }
 }
