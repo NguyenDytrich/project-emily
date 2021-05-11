@@ -265,4 +265,31 @@ describe('Calendar Resolver', () => {
     expect(event?.attendees.length).toEqual(len + 1);
     expect(attendance?.status).toBe('interested');
   });
+
+  // TODO This test is not atomic. Needs to guarantee user[2] is interested in the
+  // first even returned...
+  it('should mark user as no longer interested', async () => {
+    const resolverData = createMockResolverData({
+      payload: { userId: users[2].id },
+    });
+
+    const event = await CalendarEvent.findOne({
+      include: [{ model: User, as: 'attendees' }],
+    });
+    if (!event) throw new Error('no event found');
+    const len = event.attendees.length;
+
+    const res = await resolver.uninterestCalendarEvent(
+      event.id,
+      resolverData.context,
+    );
+    const attendance = await CalendarEventAttendees.findOne({
+      where: { eventId: event.id, userId: users[2].id },
+    });
+    await event.reload();
+
+    expect(res).toBe('OK');
+    expect(event?.attendees.length).toEqual(len);
+    expect(attendance?.status).toBe('interest_cancelled');
+  });
 });

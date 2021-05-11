@@ -106,6 +106,7 @@ export enum AttendeeStatus {
   Interested = 'interested',
   Confirmed = 'confirmed',
   Cancelled = 'cancelled',
+  InterestCancelled = 'interest_cancelled',
 }
 
 export class CalendarEventAttendees extends Model {
@@ -227,7 +228,12 @@ async function initialize(
         },
       },
       status: {
-        type: DataTypes.ENUM('interested', 'confirmed', 'cancelled'),
+        type: DataTypes.ENUM(
+          'interested',
+          'confirmed',
+          'cancelled',
+          'interest_cancelled',
+        ),
         defaultValue: 'interested',
       },
     },

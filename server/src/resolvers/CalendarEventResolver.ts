@@ -170,4 +170,26 @@ export default class CalendarEventResolver {
 
     return 'OK';
   }
+
+  /**
+   * Marks a user as no longer interested in a nevent
+   * @param {number} eventId The ID of the event to remove interest from
+   */
+  @Mutation(() => String)
+  @UseMiddleware(AuthChecker)
+  async uninterestCalendarEvent(
+    @Arg('eventId') eventId: number,
+    @Ctx() ctx: AppContext,
+  ): Promise<string> {
+    const attendance = await CalendarEventAttendees.findOne({
+      where: {
+        eventId,
+        userId: ctx.payload?.userId,
+      },
+    });
+    if (!attendance) throw new Error('No record found');
+    attendance.status = AttendeeStatus.InterestCancelled;
+    await attendance.save();
+    return 'OK';
+  }
 }
