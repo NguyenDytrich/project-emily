@@ -1,24 +1,5 @@
 <template>
-  <div class="feed-container grid grid-cols-8 h-screen">
-    <div id="topbar">Topbar</div>
-    <div id="sidebar">
-      <ul>
-        <li><a>Feed</a></li>
-        <li><a>Calendar</a></li>
-        <li><a>Gig Market</a></li>
-        <li><a>Collaborate</a></li>
-        <li><a>Groups</a></li>
-      </ul>
-      <br />
-      <br />
-      <a>Your saved links</a>
-      <ul>
-        <li><a>A Page</a></li>
-        <li><a>Dogs</a></li>
-        <li><a>Avante Garde</a></li>
-        <li><a>Math Rock</a></li>
-      </ul>
-    </div>
+  <div class="grid grid-cols-3 grid-rows-2 h-full">
     <div id="feed" class="bg-gray-100">
       <a>Everyone</a>
       <a>Friends</a>
@@ -26,13 +7,13 @@
       <!-- Posts -->
       <ul>
         <li>
-          <div class="bg-white rounded-xl shadow my-6 mx-6">
+          <div id="new-post" class="post">
             <span class="flex items-baseline">Post Something</span>
             <input class="px-5 py-2 w-full" placeholder="Create a post..." />
           </div>
         </li>
         <li v-for="p in posts" :key="p.postId">
-          <div class="bg-white rounded-xl shadow my-6 mx-6">
+          <div class="post">
             <span class="flex items-baseline"
               ><h2 class="text-lg">{{ p.author }}</h2>
               <a class="text-xs text-gray-400 ml-2">{{ fdate(p.timestamp) }}</a>
@@ -101,7 +82,6 @@
         </li>
       </ul>
     </div>
-    <div id="social">Social</div>
   </div>
 </template>
 
@@ -175,55 +155,32 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.feed-container {
-  grid-template-rows: 4em auto auto;
-}
-
-.feed-container div:nth-child(n) {
-  @apply p-3;
-}
-
-#topbar {
-  @apply col-span-full;
-  @apply row-start-1;
-  @apply shadow-md;
-  @apply bg-yellow-300;
-  z-index: 100;
-}
-
-#sidebar,
-#social {
-  @apply bg-white;
-  @apply shadow-md;
-  /*@apply border-t-2;*/
-  grid-row-end: last-line;
-  z-index: 100;
-}
-.feed-container div:nth-child(n + 2) {
-  @apply row-start-2;
-}
-
 #feed {
-  @apply col-start-2;
-  @apply col-end-6;
-  @apply bg-opacity-50;
+  @apply col-start-1;
+  @apply col-end-3;
+  grid-row-start: 1;
   grid-row-end: last-line;
 }
 
 #jobs {
-  grid-column-start: 6;
-  grid-column-end: 8;
+  grid-column-start: 3;
+  grid-column-end: 3;
+	grid-row-start: 1;
+	grid-row-end: 2;
 }
 
 #events {
-  grid-column-start: 6;
-  grid-column-end: 8;
-  grid-row-start: 3;
+  grid-column-start: 3;
+  grid-row-start: 2;
   grid-row-end: last-line;
 }
 
-#social {
-  grid-column-start: 8;
-  grid-row-end: last-line;
+.post {
+  @apply bg-white;
+  @apply rounded-xl;
+  @apply shadow;
+  @apply my-6;
+  @apply mx-6;
+  @apply p-2;
 }
 </style>

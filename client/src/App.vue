@@ -1,5 +1,29 @@
 <template>
-  <router-view />
+  <div class="app-container grid grid-cols-8 h-screen">
+    <div id="topbar">Topbar</div>
+    <div id="sidebar">
+      <ul>
+        <li><a>Feed</a></li>
+        <li><a>Calendar</a></li>
+        <li><a>Gig Market</a></li>
+        <li><a>Collaborate</a></li>
+        <li><a>Groups</a></li>
+      </ul>
+      <br />
+      <br />
+      <a>Your saved links</a>
+      <ul>
+        <li><a>A Page</a></li>
+        <li><a>Dogs</a></li>
+        <li><a>Avante Garde</a></li>
+        <li><a>Math Rock</a></li>
+      </ul>
+    </div>
+    <div class="main-view">
+      <router-view />
+    </div>
+    <div id="social">Social</div>
+  </div>
 </template>
 
 <style>
@@ -10,12 +34,36 @@
   color: #2c3e50;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.app-container {
+  grid-template-rows: 4em auto auto;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+#topbar {
+  @apply col-span-full;
+  @apply row-start-1;
+  @apply shadow-md;
+  z-index: 100;
+}
+
+#sidebar,
+#social {
+  @apply bg-white;
+  @apply shadow-md;
+  @apply border-t-2;
+  grid-row-start: 2;
+  grid-row-end: last-line;
+  z-index: 100;
+}
+
+#social {
+  grid-column-start: 8;
+}
+
+.main-view {
+  @apply bg-gray-100;
+  grid-column-start: 2;
+  grid-column-end: 8;
+  grid-row-start: 2;
+  grid-row-end: last-line;
 }
 </style>

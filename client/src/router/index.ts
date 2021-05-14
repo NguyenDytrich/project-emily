@@ -28,6 +28,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/About.vue"),
   },
+  {
+    path: "/calendar",
+    name: "Calendar",
+    component: () =>
+      import(/* webpackChunkName: "calendar" */ "../views/CalendarEvents.vue"),
+  },
 ];
 
 const router = createRouter({
