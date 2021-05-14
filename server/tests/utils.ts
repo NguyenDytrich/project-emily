@@ -1,9 +1,11 @@
 import AppContext from '../src/AppContext';
+import { JwtPayload } from '../src/AppContext';
 import { ResolverData } from 'type-graphql';
 import mockito from 'ts-mockito';
 
 interface MockResolverArgs {
   auth?: string;
+  payload?: JwtPayload;
 }
 
 function createMockResolverData(
@@ -17,6 +19,7 @@ function createMockResolverData(
       },
     },
     res: {},
+    payload: args?.payload ?? {},
   } as AppContext);
   return mockito.instance(_mResolverData) as ResolverData<AppContext>;
 }
