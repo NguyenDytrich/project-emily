@@ -147,8 +147,6 @@ export default class CalendarEventResolver {
     @Arg('eventId') eventId: number,
     @Ctx() ctx: AppContext,
   ): Promise<string> {
-    const addUser = await User.findByPk(addUserId);
-    if (!addUser) throw new Error();
     const event = await CalendarEvent.findByPk(eventId);
     if (!event) throw new Error();
 
@@ -156,7 +154,7 @@ export default class CalendarEventResolver {
       throw new Error('Unauthorized');
     }
 
-    await event.addParticipant(addUser);
+    await event.addParticipant(addUserId);
     await event.save();
     return 'OK';
   }
