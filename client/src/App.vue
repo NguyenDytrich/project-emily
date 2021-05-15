@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container grid grid-cols-8 h-screen">
+  <div v-if="isAuth" class="app-container grid grid-cols-8 h-screen">
     <div id="topbar">Topbar</div>
     <div id="sidebar">
       <ul>
@@ -24,7 +24,23 @@
     </div>
     <div id="social">Social</div>
   </div>
+  <router-view v-else />
 </template>
+
+<script lang="ts">
+import { defineComponent, ref } from "vue";
+import { useStore } from "vuex";
+import { key } from "./store";
+
+export default defineComponent({
+  setup() {
+    const store = useStore(key);
+    const isAuth = ref(false);
+    isAuth.value = store.state.user.isAuth;
+    return isAuth;
+  },
+});
+</script>
 
 <style>
 #app {

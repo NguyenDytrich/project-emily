@@ -3,7 +3,7 @@
     <div class="w-7/12 p-4 flex">
       <div class="text-2xl mx-auto w-max"><h1>Welcome to Emily</h1></div>
     </div>
-    <div class="w-5/12 bg-yellow-300 text-white p-4">
+    <div class="w-5/12 bg-yellow-400 text-white p-4">
       <!-- Signup view -->
       <div v-if="view === 1" class="text-center w-4/6 mx-auto">
         <h1 class="text-2xl mb-10 mt-5">Sign up</h1>
