@@ -12,15 +12,23 @@
           need a <i><u>beta key</u></i> to participate! Don't have one? Don't
           worry! Email [email] for info on how to get one!
         </p>
-        <form :submit="preventDefault">
+        <form v-on:submit.prevent="signupUser">
           <div class="flex fieldset">
-            <input placeholder="First name" />
-            <input placeholder="Last name" />
+            <input v-model="signup.fname" placeholder="First name" />
+            <input v-model="signup.lname" placeholder="Last name" />
           </div>
           <input placeholder="Beta Key" />
-          <input placeholder="Email" />
-          <input placeholder="Password" type="password" />
-          <input placeholder="Password (again)" type="password" />
+          <input v-model="signup.email" placeholder="Email" />
+          <input
+            v-model="signup.password"
+            placeholder="Password"
+            type="password"
+          />
+          <input
+            v-model="signup.passwordConf"
+            placeholder="Password (again)"
+            type="password"
+          />
           <p class="mb-4">
             Already have an account? <a @click="setState(2)">Login here</a>
           </p>
@@ -66,18 +74,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, reactive, ref } from "vue";
 
 export default defineComponent({
   data: () => {
     const view = ref(0);
+    const signup = reactive({
+      fname: "",
+      lname: "",
+      email: "",
+      password: "",
+      passwordConf: "",
+    });
     return {
       view,
+      signup,
     };
   },
   methods: {
     setState(val = 0) {
       this.view = val;
+    },
+    signupUser() {
+      console.log(this.signup);
     },
   },
 });
