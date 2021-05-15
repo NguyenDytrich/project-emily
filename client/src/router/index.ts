@@ -47,10 +47,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (
-    to.matched.some((record) => record.meta.login) &&
-    store.state.user.isAuth
-  ) {
+  if (to.matched.some((record) => record.meta.login) && !store.getters.isAuth) {
     next("/login");
   } else {
     next();

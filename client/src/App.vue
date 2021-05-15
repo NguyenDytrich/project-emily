@@ -28,22 +28,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useStore } from "vuex";
-import { key } from "./store";
+import { defineComponent } from "vue";
+import { mapGetters } from "vuex";
 import Login from "./views/Login.vue";
 
 export default defineComponent({
   components: {
     Login,
   },
-  data() {
-    const store = useStore(key);
-    const isAuth = ref(false);
-    isAuth.value = store.state.user.isAuth;
-    return {
-      isAuth,
-    };
+  computed: {
+    ...mapGetters(["isAuth"]),
   },
 });
 </script>

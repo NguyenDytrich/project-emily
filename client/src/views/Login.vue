@@ -33,7 +33,7 @@
             Already have an account? <a @click="setState(2)">Login here</a>
           </p>
           <div>
-            <button id="signup-btn">Signup</button>
+            <button id="signup-btn" type="submit">Signup</button>
           </div>
           <div>
             <button @click="setState()" id="back-btn" class="mt-5">
@@ -46,9 +46,13 @@
       <!-- Login view -->
       <div v-else-if="view === 2" class="text-center w-4/6 mx-auto">
         <h1 class="text-2xl mb-10 mt-5">Login</h1>
-        <form :submit="preventDefault">
-          <input placeholder="Email" />
-          <input placeholder="Password" type="password" />
+        <form v-on:submit.prevent="loginUser">
+          <input v-model="login.email" placeholder="Email" />
+          <input
+            v-model="login.password"
+            placeholder="Password"
+            type="password"
+          />
           <p class="mb-4">
             Don't have an account? <a @click="setState(1)">Sign up here</a>
           </p>
@@ -75,9 +79,17 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import { key } from "../store";
 import axios from "axios";
 
 export default defineComponent({
+  setup() {
+    const store = useStore(key);
+    const router = useRouter();
+    return { store, router };
+  },
   data: () => {
     const view = ref(0);
     const signup = reactive({
@@ -87,9 +99,16 @@ export default defineComponent({
       password: "",
       passwordConf: "",
     });
+
+    const login = reactive({
+      email: "",
+      password: "",
+    });
+
     return {
       view,
       signup,
+      login,
     };
   },
   methods: {
@@ -118,7 +137,37 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
+					// TODO pop up a signup modal
           this.$router.push("/");
+        } else {
+          console.log(res.data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    async loginUser() {
+      try {
+        const res = await axios({
+          url: "http://localhost:4000/graphql",
+          method: "post",
+          data: {
+            query: `
+						mutation login($email:String!, $password:String!) {
+							login(email: $email, password: $password) {
+							token
+							}
+						}`,
+            variables: {
+              ...this.login,
+            },
+          },
+        });
+        if (!res.data.errors) {
+          this.store.commit("setAuth", res.data.token);
+          this.router.push({ path: "/" });
+        } else {
+          console.log(res.data);
         }
       } catch (err) {
         console.error(err);
