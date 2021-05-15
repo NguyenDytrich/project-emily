@@ -137,7 +137,7 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
-					// TODO pop up a signup modal
+          // TODO pop up a signup modal, automatically sign in or tell app to load welcome screen
           this.$router.push("/");
         } else {
           console.log(res.data);

@@ -1,6 +1,11 @@
 <template>
   <div v-if="isAuth" class="app-container grid grid-cols-8 h-screen">
-    <div id="topbar">Topbar</div>
+    <div id="topbar" class="flex justify-between">
+      <div>Topbar</div>
+      <div>
+        <a @click="logout">Logout</a>
+      </div>
+    </div>
     <div id="sidebar">
       <ul>
         <li><a>Feed</a></li>
@@ -29,12 +34,25 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters } from "vuex";
+import { useStore, mapGetters } from "vuex";
+import { useRouter } from "vue-router";
+import { key } from "./store";
 import Login from "./views/Login.vue";
 
 export default defineComponent({
+  setup() {
+    const store = useStore(key);
+    const router = useRouter();
+    return { store, router };
+  },
   components: {
     Login,
+  },
+  methods: {
+    logout() {
+      this.store.commit("logout");
+      this.router.push("/");
+    },
   },
   computed: {
     ...mapGetters(["isAuth"]),

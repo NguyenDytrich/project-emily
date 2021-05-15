@@ -21,12 +21,15 @@ const userModule: Module<UserState, RootState> = {
     setAuth(state, token: string) {
       state.token = token;
     },
+    logout(state) {
+      state.token = "";
+    },
   },
   getters: {
     isAuth: (state) => {
       return state.token !== "" ? true : false;
-    }
-  }
+    },
+  },
 };
 
 export const key: InjectionKey<Store<RootState>> = Symbol();
