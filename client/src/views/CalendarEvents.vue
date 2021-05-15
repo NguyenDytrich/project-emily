@@ -41,9 +41,19 @@ function daysInMonth(month: number, year: number) {
   return new Date(year, month + 1, 0).getDate();
 }
 
+interface CalendarEvent {
+  date: number;
+  today?: boolean;
+  events?: EventDetails[];
+}
+
+interface EventDetails {
+  name: string;
+}
+
 export default defineComponent({
   data() {
-    const dates = reactive([]);
+    const dates = reactive([] as CalendarEvent[]);
     const dayHeaders = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
     onBeforeMount(async () => {
       const today = new Date();
