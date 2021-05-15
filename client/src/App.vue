@@ -4,7 +4,7 @@
     <div id="sidebar">
       <ul>
         <li><a>Feed</a></li>
-        <li><a>Calendar</a></li>
+        <li><router-link to="calendar">Calendar</router-link></li>
         <li><a>Gig Market</a></li>
         <li><a>Collaborate</a></li>
         <li><a>Groups</a></li>
@@ -50,6 +50,8 @@
   @apply bg-white;
   @apply shadow-md;
   @apply border-t-2;
+  @apply px-3;
+  @apply py-3;
   grid-row-start: 2;
   grid-row-end: last-line;
   z-index: 100;
