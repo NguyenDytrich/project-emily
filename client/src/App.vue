@@ -24,20 +24,26 @@
     </div>
     <div id="social">Social</div>
   </div>
-  <router-view v-else />
+  <Login v-else />
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { useStore } from "vuex";
 import { key } from "./store";
+import Login from "./views/Login.vue";
 
 export default defineComponent({
-  setup() {
+  components: {
+    Login,
+  },
+  data() {
     const store = useStore(key);
     const isAuth = ref(false);
     isAuth.value = store.state.user.isAuth;
-    return isAuth;
+    return {
+      isAuth,
+    };
   },
 });
 </script>

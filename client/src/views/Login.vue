@@ -75,6 +75,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from "vue";
+import axios from "axios";
 
 export default defineComponent({
   data: () => {
@@ -95,8 +96,33 @@ export default defineComponent({
     setState(val = 0) {
       this.view = val;
     },
-    signupUser() {
-      console.log(this.signup);
+    async signupUser() {
+      try {
+        const res = await axios({
+          url: "http://localhost:4000/graphql",
+          method: "post",
+          data: {
+            query: `
+						mutation signup($args:UserSignupInput!){
+							signup(user:$args) {
+								fname
+								lname
+							}
+						}
+						`,
+            variables: {
+              args: {
+                ...this.signup,
+              },
+            },
+          },
+        });
+        if (!res.data.errors) {
+          this.$router.push("/");
+        }
+      } catch (err) {
+        console.error(err);
+      }
     },
   },
 });
