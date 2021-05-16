@@ -22,6 +22,9 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
+  created() {
+    this.$emitter.on("start-close-modal", this.closeModal);
+  },
   data() {
     const exiting = false;
     return {
@@ -32,7 +35,7 @@ export default defineComponent({
     closeModal() {
       this.exiting = true;
       setTimeout(() => {
-        this.$emit("closeModal");
+        this.$emitter.emit("close-modal");
       }, 250);
     },
   },

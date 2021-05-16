@@ -25,9 +25,7 @@
         <div class="flex justify-end gap-4">
           <button class="bg-green-400" type="submit">Create</button>
           <!-- Modals are wrapped in a transition node, so we call the transition's parent, which is our ModalBase. -->
-          <button class="bg-red-400" @click="$parent.$parent.closeModal">
-            Cancel
-          </button>
+          <button class="bg-red-400" @click="startClose">Cancel</button>
         </div>
       </form>
     </div>
@@ -54,6 +52,9 @@ export default defineComponent({
     return { formState };
   },
   methods: {
+    startClose() {
+      this.$emitter.emit("start-close-modal");
+    },
     async createEvent() {
       try {
         const res = await axios({
@@ -82,9 +83,7 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
-          if (this.$parent?.$parent) {
-            (this.$parent.$parent as any).closeModal();
-          }
+          this.startClose();
         } else {
           console.error(res.data.errors);
         }

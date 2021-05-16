@@ -64,6 +64,9 @@ export default defineComponent({
     ModalBase,
     CreateEventForm,
   },
+  created() {
+    this.$emitter.on("close-modal", this.closeModal);
+  },
   data() {
     const dates = reactive([] as CalendarEvent[]);
     const dayHeaders = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
