@@ -27,9 +27,11 @@ export async function createAuthToken(user: User): Promise<string> {
   const token = await jwt.sign(
     {
       userId: user.id,
-      expiresIn,
     },
     process.env.APP_SECRET ?? '',
+    {
+      expiresIn,
+    },
   );
   return token;
 }
