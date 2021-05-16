@@ -29,6 +29,9 @@ const userModule: Module<UserState, RootState> = {
     isAuth: (state) => {
       return state.token !== "" ? true : false;
     },
+    getAuth: (state) => {
+      return `Bearer ${state.token}`;
+    },
   },
 };
 
