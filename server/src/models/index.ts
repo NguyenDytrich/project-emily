@@ -37,6 +37,11 @@ class User extends Model {
   @Field()
   public readonly updatedAt!: Date;
 
+  @Field()
+  get fullName(): string {
+    return `${this.fname} ${this.lname}`;
+  }
+
   public sid!: string | null;
 
   public async createCalendarEvent(
@@ -87,7 +92,7 @@ class CalendarEvent extends Model {
   @Field()
   public description!: string;
 
-  @Field()
+  @Field((type) => Date)
   public date!: number;
 
   @Field()
@@ -271,10 +276,11 @@ async function initialize(
   );
 
   // Development
-  await User.sync({ force: true });
-  await CalendarEvent.sync({ force: true });
-  await CalendarEventAttendees.sync({ force: true });
-  await CalendarEventParticipants.sync({ force: true });
+  const opts = { force: false };
+  await User.sync(opts);
+  await CalendarEvent.sync(opts);
+  await CalendarEventAttendees.sync(opts);
+  await CalendarEventParticipants.sync(opts);
 
   // Associations
   CalendarEvent.belongsToMany(User, {
@@ -303,9 +309,9 @@ async function initialize(
   });
 
   // Sync new associations
-  await User.sync({ force: true });
-  await CalendarEvent.sync({ force: true });
-  await CalendarEventAttendees.sync({ force: true });
+  await User.sync(opts);
+  await CalendarEvent.sync(opts);
+  await CalendarEventAttendees.sync(opts);
 
   return sequelize;
 }

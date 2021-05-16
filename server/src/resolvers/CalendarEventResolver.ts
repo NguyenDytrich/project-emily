@@ -29,13 +29,27 @@ class EventDetailsInput {
   public date!: Date;
 }
 
+@InputType()
+class EventFilters {
+  @Field()
+  public minDate?: Date;
+
+  @Field()
+  public maxDate?: Date;
+
+  @Field()
+  public ownerId?: number;
+}
+
 @Resolver()
 export default class CalendarEventResolver {
   /**
    * @returns a list of all calendar events.
    */
   @Query((returns) => [CalendarEvent])
-  async events(): Promise<CalendarEvent[]> {
+  async events(
+    @Arg('filters') filters?: EventFilters,
+  ): Promise<CalendarEvent[]> {
     const events = await CalendarEvent.findAll({
       include: [
         { model: User, as: 'participants' },
