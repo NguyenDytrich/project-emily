@@ -6,7 +6,7 @@
         <span class="mr-5">prev</span><span>next</span>
       </div>
       <div>
-        <h1>+ create event</h1>
+        <a @click="toggleModal">+ create event</a>
       </div>
     </div>
     <div id="dates" class="p-5">
@@ -14,6 +14,7 @@
         <div v-for="h in dayHeaders" :key="h" class="h-10 text-gray-400 px-2">
           {{ h }}
         </div>
+        <!-- Date squares -->
         <div class="date-square" v-for="d in dates" :key="d.date">
           <a class="date-content" :class="{ today: d.today }">{{
             d.date > 0 ? d.date : ""
@@ -26,11 +27,18 @@
         </div>
       </div>
     </div>
+    <transition name="fade">
+      <ModalBase v-if="showModal" @close-modal="closeModal">
+        <CreateEventForm />
+      </ModalBase>
+    </transition>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, onBeforeMount } from "vue";
+import { defineComponent, ref, reactive, onBeforeMount } from "vue";
+import ModalBase from "../components/ModalBase.vue";
+import CreateEventForm from "../components/CreateEventForm.vue";
 
 /**
  * Function that returns the number of dates
@@ -52,20 +60,28 @@ interface EventDetails {
 }
 
 export default defineComponent({
+  components: {
+    ModalBase,
+    CreateEventForm,
+  },
+  created() {
+    this.$emitter.on("close-modal", this.closeModal);
+  },
   data() {
     const dates = reactive([] as CalendarEvent[]);
     const dayHeaders = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+    const showModal = ref(false);
     onBeforeMount(async () => {
       const today = new Date();
-      for (let i = 1; i < today.getDay() + 1; i++) {
-        dates.push({ date: i * -1, today: false });
+      for (let i = 1; i < today.getDay(); i++) {
+        dates.push({ date: -i, today: false });
       }
       for (
         let i = 0;
         i < daysInMonth(today.getMonth(), today.getFullYear());
         i++
       ) {
-        dates.push({ date: i + 1, today: i == today.getDate() });
+        dates.push({ date: i + 1, today: i + 1 == today.getDate() });
       }
       // TODO: API calls
       dates[8].events = [{ name: "Test event" }];
@@ -74,7 +90,16 @@ export default defineComponent({
     return {
       dates,
       dayHeaders,
+      showModal,
     };
+  },
+  methods: {
+    closeModal() {
+      this.showModal = false;
+    },
+    toggleModal() {
+      this.showModal = !this.showModal;
+    },
   },
 });
 </script>
@@ -105,6 +130,7 @@ a.date-content {
 .events .event {
   @apply bg-yellow-400;
   @apply mb-1;
+  @apply rounded;
 }
 
 .start {
@@ -114,5 +140,16 @@ a.date-content {
 a.today {
   @apply bg-green-400;
   @apply rounded-full;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  @apply z-30;
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

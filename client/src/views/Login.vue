@@ -164,7 +164,7 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
-          this.store.commit("setAuth", res.data.token);
+          this.store.commit("setAuth", res.data.data.login.token);
           this.router.push({ path: "/" });
         } else {
           console.log(res.data);

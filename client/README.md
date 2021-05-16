@@ -1,4 +1,4 @@
-# client
+# Project_Emily Client
 
 ## Project setup
 ```
@@ -22,3 +22,13 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+# Mitt event docs
+
+### close-modal
+---
+When the ModalBase has finished all its animations, `"close-modal"` will be emitted.
+
+### start-close-modal
+---
+Call from any modals in the ModalBase slot. This will start the transitions before finally closing the modal.
