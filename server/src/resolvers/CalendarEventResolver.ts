@@ -48,7 +48,7 @@ export default class CalendarEventResolver {
    */
   @Query((returns) => [CalendarEvent])
   async events(
-    @Arg('filters') filters?: EventFilters,
+    @Arg('filters', { nullable: true }) filters?: EventFilters,
   ): Promise<CalendarEvent[]> {
     const events = await CalendarEvent.findAll({
       include: [
