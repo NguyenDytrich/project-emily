@@ -8,7 +8,7 @@
     </div>
     <div id="sidebar">
       <ul>
-        <li><a>Feed</a></li>
+        <li><router-link to="/">Feed</router-link></li>
         <li><router-link to="calendar">Calendar</router-link></li>
         <li><a>Gig Market</a></li>
         <li><a>Collaborate</a></li>
@@ -76,7 +76,7 @@ export default defineComponent({
   @apply col-span-full;
   @apply row-start-1;
   @apply shadow-md;
-  z-index: 100;
+  @apply z-10;
 }
 
 #sidebar,
@@ -86,9 +86,9 @@ export default defineComponent({
   @apply border-t-2;
   @apply px-3;
   @apply py-3;
+  @apply z-20;
   grid-row-start: 2;
   grid-row-end: last-line;
-  z-index: 100;
 }
 
 #social {
