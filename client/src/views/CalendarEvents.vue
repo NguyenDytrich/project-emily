@@ -21,7 +21,7 @@
           }}</a>
           <div v-if="d.events?.length > 0" class="events">
             <div v-for="e in d.events" :key="e.name" class="event">
-              {{ e.name }}
+              {{ e.title }}
             </div>
           </div>
         </div>
@@ -39,6 +39,7 @@
 import { defineComponent, ref, reactive, onBeforeMount } from "vue";
 import ModalBase from "../components/ModalBase.vue";
 import CreateEventForm from "../components/CreateEventForm.vue";
+import axios from "axios";
 
 /**
  * Function that returns the number of dates
@@ -52,11 +53,11 @@ function daysInMonth(month: number, year: number) {
 interface CalendarEvent {
   date: number;
   today?: boolean;
-  events?: EventDetails[];
+  events: EventDetails[];
 }
 
 interface EventDetails {
-  name: string;
+  title: string;
 }
 
 export default defineComponent({
@@ -73,19 +74,51 @@ export default defineComponent({
     const showModal = ref(false);
     onBeforeMount(async () => {
       const today = new Date();
-      for (let i = 1; i < today.getDay(); i++) {
-        dates.push({ date: -i, today: false });
-      }
+
       for (
         let i = 0;
         i < daysInMonth(today.getMonth(), today.getFullYear());
         i++
       ) {
-        dates.push({ date: i + 1, today: i + 1 == today.getDate() });
+        dates.push({
+          date: i + 1,
+          today: i + 1 == today.getDate(),
+          events: [],
+        });
       }
       // TODO: API calls
-      dates[8].events = [{ name: "Test event" }];
-      dates[19].events = [{ name: "Test event 2" }, { name: "Test event 3" }];
+      const {
+        data: {
+          data: { events },
+        },
+      } = await axios({
+        url: "http://localhost:4000/graphql",
+        method: "post",
+        data: {
+          query: `
+						query {
+							events {
+								title
+								date
+							}
+						}
+					`,
+        },
+      });
+      for (let e of events) {
+        const date = new Date(e.date);
+        console.log(e.date);
+        console.log(date);
+        if (date.getMonth() == today.getMonth()) {
+          dates[date.getDate()].events.push(e);
+        }
+      }
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      for (let i = 1; i < firstDay.getDay(); i++) {
+        dates.unshift({ date: -i, today: false, events: [] });
+      }
+      console.log(dates);
     });
     return {
       dates,

@@ -12,7 +12,12 @@
           />
           <div>
             <label for="date" class="sr-only">Date</label>
-            <input id="date" type="date" class="border-b-2" />
+            <input
+              v-model="formState.date"
+              id="date"
+              type="date"
+              class="border-b-2"
+            />
           </div>
         </div>
         <div>
@@ -47,7 +52,7 @@ export default defineComponent({
     const formState = reactive({
       title: "",
       description: "",
-      date: Date.now(),
+      date: "",
     });
     return { formState };
   },
@@ -56,6 +61,7 @@ export default defineComponent({
       this.$emitter.emit("start-close-modal");
     },
     async createEvent() {
+      console.log(this.formState.date);
       try {
         const res = await axios({
           url: "http://localhost:4000/graphql",
@@ -72,9 +78,7 @@ export default defineComponent({
 					`,
             variables: {
               args: {
-                title: this.formState.title,
-                description: this.formState.description,
-                date: "05-20-2021",
+                ...this.formState,
               },
             },
           },
