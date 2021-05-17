@@ -1,135 +1,21 @@
+import { Sequelize } from 'sequelize';
+
+import initCalendar from './CalendarEvent';
+import initUser from './User';
+import { User } from './User';
 import {
-  Sequelize,
-  DataTypes,
-  Model,
-  HasManyGetAssociationsMixin,
-  HasManyAddAssociationMixin,
-} from 'sequelize';
-import { ObjectType, Field } from 'type-graphql';
+  AttendeeStatus,
+  CalendarEvent,
+  CalendarEventAttendees,
+  CalendarEventParticipants,
+} from './CalendarEvent';
 
-interface CreateEventArgs {
-  participants?: User[];
-  attendees?: User[];
-  title: string;
-  description: string;
-  date: Date;
+interface InitArgs {
+  logging?: boolean | (() => void);
+  force?: boolean;
 }
 
-@ObjectType()
-class User extends Model {
-  @Field()
-  public id!: number;
-
-  @Field()
-  public fname!: string;
-
-  @Field()
-  public lname!: string;
-
-  @Field()
-  public email!: string;
-  public password!: string;
-  public lastLogin!: string;
-
-  @Field()
-  public readonly createdAt!: Date;
-
-  @Field()
-  public readonly updatedAt!: Date;
-
-  @Field()
-  get fullName(): string {
-    return `${this.fname} ${this.lname}`;
-  }
-
-  public sid!: string | null;
-
-  public async createCalendarEvent(
-    args: CreateEventArgs,
-  ): Promise<CalendarEvent> {
-    const { title, description, date, participants, attendees } = args;
-
-    // TODO wrap in a transaction
-    const event = await CalendarEvent.create({
-      organizerId: this.id,
-      title,
-      description,
-      date,
-    });
-
-    if (participants && participants.length > 0) {
-      for (const p of participants) {
-        await event.addParticipant(p);
-      }
-    }
-
-    if (attendees && attendees.length > 0) {
-      for (const a of attendees) {
-        await event.addAttendee(a);
-      }
-    }
-
-    await event.save();
-    return event;
-  }
-}
-
-@ObjectType()
-class CalendarEvent extends Model {
-  @Field()
-  public id!: number;
-
-  // TODO can be an organizer or an organization?
-  @Field()
-  public organizer!: User;
-
-  @Field((type) => [User])
-  public participants!: User[];
-
-  @Field((type) => [User])
-  public attendees!: User[];
-
-  @Field()
-  public description!: string;
-
-  @Field((type) => Date)
-  public date!: number;
-
-  @Field()
-  public title!: string;
-
-  public organizerId!: number;
-
-  public getParticipants!: HasManyGetAssociationsMixin<User>;
-  public addParticipant!: HasManyAddAssociationMixin<User, number>;
-
-  public getAttendees!: HasManyGetAssociationsMixin<User>;
-  public addAttendee!: HasManyAddAssociationMixin<User, number>;
-}
-
-export enum AttendeeStatus {
-  Interested = 'interested',
-  Confirmed = 'confirmed',
-  Cancelled = 'cancelled',
-  InterestCancelled = 'interest_cancelled',
-}
-
-export class CalendarEventAttendees extends Model {
-  public userId!: number;
-  public eventId!: number;
-  public status!: AttendeeStatus;
-}
-
-export class CalendarEventParticipants extends Model {
-  public userId!: number;
-  public eventId!: number;
-  public confirmed!: boolean;
-}
-
-async function initialize(
-  url: string,
-  args?: { logging?: boolean | (() => void); force?: boolean },
-): Promise<Sequelize> {
+async function initialize(url: string, args?: InitArgs): Promise<Sequelize> {
   const sequelize = new Sequelize(url, { logging: args?.logging });
 
   try {
@@ -138,149 +24,9 @@ async function initialize(
     console.error(err);
     throw err;
   }
-
-  User.init(
-    {
-      fname: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      lname: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      // TODO I think Sequelize has an email field?
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      // TODO change to date
-      lastLogin: {
-        type: DataTypes.STRING,
-      },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      sid: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        unique: true,
-      },
-    },
-    {
-      // No password on retrieval by default
-      defaultScope: {
-        attributes: {
-          exclude: ['password', 'sid'],
-        },
-      },
-      scopes: {
-        auth: {
-          attributes: {
-            include: ['password', 'sid'],
-          },
-        },
-      },
-      sequelize,
-      modelName: 'User',
-      underscored: true,
-    },
-  );
-
-  CalendarEvent.init(
-    {
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      date: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      description: {
-        type: DataTypes.STRING,
-      },
-      organizerId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: User,
-          key: 'id',
-        },
-      },
-    },
-    {
-      sequelize,
-      underscored: true,
-    },
-  );
-
-  CalendarEventAttendees.init(
-    {
-      userId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: User,
-          key: 'id',
-        },
-      },
-      eventId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: CalendarEvent,
-          key: 'id',
-        },
-      },
-      status: {
-        type: DataTypes.ENUM(
-          'interested',
-          'confirmed',
-          'cancelled',
-          'interest_cancelled',
-        ),
-        defaultValue: 'interested',
-      },
-    },
-    {
-      sequelize,
-      underscored: true,
-    },
-  );
-
-  CalendarEventParticipants.init(
-    {
-      userId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: User,
-          key: 'id',
-        },
-      },
-      eventId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: CalendarEvent,
-          key: 'id',
-        },
-      },
-      confirmed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-    },
-    {
-      sequelize,
-      underscored: true,
-    },
-  );
-
-  // Development
-  const opts = { force: args?.force ?? false };
-  await User.sync(opts);
-  await CalendarEvent.sync(opts);
-  await CalendarEventAttendees.sync(opts);
-  await CalendarEventParticipants.sync(opts);
+  initUser(sequelize);
+  initCalendar(sequelize);
+  await synchronize(args);
 
   // Associations
   CalendarEvent.belongsToMany(User, {
@@ -309,11 +55,24 @@ async function initialize(
   });
 
   // Sync new associations
-  await User.sync(opts);
-  await CalendarEvent.sync(opts);
-  await CalendarEventAttendees.sync(opts);
-
+  await synchronize(args);
   return sequelize;
 }
 
-export { initialize, User, CalendarEvent };
+async function synchronize(args?: InitArgs) {
+  // Development
+  const opts = { force: args?.force ?? false };
+  await User.sync(opts);
+  await CalendarEvent.sync(opts);
+  await CalendarEventAttendees.sync(opts);
+  await CalendarEventParticipants.sync(opts);
+}
+
+export {
+  initialize,
+  User,
+  AttendeeStatus,
+  CalendarEvent,
+  CalendarEventParticipants,
+  CalendarEventAttendees,
+};
