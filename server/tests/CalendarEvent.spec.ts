@@ -16,8 +16,6 @@ import bcrypt from 'bcrypt';
 const users = [] as User[];
 let sequelize: Sequelize;
 beforeAll(async () => {
-  // TODO pull from event variables...
-  // TODO this will break when force option is removed from the sync() methods
   try {
     sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
       force: true,
@@ -91,18 +89,18 @@ describe('Calendar Resolver', () => {
 
     await event.addParticipant(users[0]);
     await event.addAttendee(users[1]);
-
     await event.save();
 
     const events = await resolver.events();
+    const target = events.filter((e) => e.id == event.id);
 
-    expect(events[0].participants.length).toBe(1);
-    expect(events[0].participants[0].id).toBe(users[0].id);
+    expect(target[0].participants.length).toBe(1);
+    expect(target[0].participants[0].id).toBe(users[0].id);
 
-    expect(events[0].attendees.length).toBe(1);
-    expect(events[0].attendees[0].id).toBe(users[1].id);
+    expect(target[0].attendees.length).toBe(1);
+    expect(target[0].attendees[0].id).toBe(users[1].id);
 
-    expect(events[0].organizer.id).toBe(users[0].id);
+    expect(target[0].organizer.id).toBe(users[0].id);
   });
 
   it('should create a CalendarEvent with correct relationship', async () => {
