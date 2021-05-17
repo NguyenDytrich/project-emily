@@ -128,9 +128,9 @@ export class CalendarEventParticipants extends Model {
 
 async function initialize(
   url: string,
-  logging?: boolean | (() => void),
+  args?: { logging?: boolean | (() => void); force?: boolean },
 ): Promise<Sequelize> {
-  const sequelize = new Sequelize(url, { logging });
+  const sequelize = new Sequelize(url, { logging: args?.logging });
 
   try {
     await sequelize.authenticate();
@@ -276,7 +276,7 @@ async function initialize(
   );
 
   // Development
-  const opts = { force: false };
+  const opts = { force: args?.force ?? false };
   await User.sync(opts);
   await CalendarEvent.sync(opts);
   await CalendarEventAttendees.sync(opts);

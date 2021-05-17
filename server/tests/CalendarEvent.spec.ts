@@ -19,10 +19,9 @@ beforeAll(async () => {
   // TODO pull from event variables...
   // TODO this will break when force option is removed from the sync() methods
   try {
-    sequelize = await initialize(
-      'postgres://testsuper@localhost:5432/test',
-      false,
-    );
+    sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
+      force: true,
+    });
   } catch (err) {
     throw err;
   }
