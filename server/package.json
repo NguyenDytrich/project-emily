@@ -39,6 +39,7 @@
     "graphql": "^15.5.0",
     "jsonwebtoken": "^8.5.1",
     "pg": "^8.5.1",
+    "quill-delta": "^4.2.2",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.2",
     "type-graphql": "^1.1.1",
