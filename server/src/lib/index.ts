@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models';
-import { AuthPayload, RefreshPayload } from '../resolvers/mutation/auth';
+import { AuthPayload, RefreshPayload } from '../graphql/resolvers/AuthResolver';
 import { v4 as uuidv4 } from 'uuid';
 
 export class EmailError extends Error {

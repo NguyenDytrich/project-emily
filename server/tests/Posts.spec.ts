@@ -2,9 +2,12 @@ import 'reflect-metadata';
 
 import { Sequelize } from 'sequelize';
 import Delta from 'quill-delta';
-
 import { initialize, User, Post } from '../src/models';
+
 import UserGen from './utils/UserGen';
+import { createMockResolverData } from './utils/utils';
+
+import PostResolver from '../src/graphql/resolvers/PostResolver';
 
 let sequelize: Sequelize;
 let users: UserGen;
@@ -72,4 +75,48 @@ describe('Association tests', () => {
     expect(author).toBeInstanceOf(User);
     expect(author.id).toEqual(user.id);
   });
+});
+
+describe('Resolver tests', () => {
+  let delta = new Delta();
+  const resolver = new PostResolver();
+  beforeEach(() => {
+    delta = new Delta();
+    delta.insert('Hello world');
+  });
+  afterEach(async () => {
+    return Post.destroy({
+      truncate: true,
+    });
+  });
+
+  it('Should create a post', async () => {
+    const { context } = createMockResolverData({
+      payload: { userId: users.first.id },
+    });
+
+    const post = await resolver.createPost(JSON.stringify(delta), context);
+
+    const { count, rows: posts } = await Post.findAndCountAll();
+
+    expect(post).toBeInstanceOf(Post);
+    expect(count).toEqual(1);
+    expect(posts[0].id).toEqual(post.id);
+  });
+
+  it.each([{}, { payload: { userId: 1000 } }])(
+    'Should not create a post with invalid payload',
+    async (testCase) => {
+      const { context } = createMockResolverData(testCase);
+
+      expect.hasAssertions();
+      try {
+        await resolver.createPost(JSON.stringify(delta), context);
+      } catch (err) {
+        const posts = await Post.findAll();
+        expect(err.message).toBe('Unauthorized');
+        expect(posts.length).toBe(0);
+      }
+    },
+  );
 });

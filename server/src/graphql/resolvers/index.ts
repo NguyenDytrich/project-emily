@@ -1,5 +1,6 @@
-import { AuthResolver } from './mutation/auth';
+import { AuthResolver } from './AuthResolver';
 import CalendarEventResolver from './CalendarEventResolver';
+import PostResolver from './PostResolver';
 
 import { Resolver, Query } from 'type-graphql';
 
@@ -20,5 +21,6 @@ class TempResolver {
 export const resolvers = [
   AuthResolver,
   TempResolver,
+  PostResolver,
   CalendarEventResolver,
 ] as const;

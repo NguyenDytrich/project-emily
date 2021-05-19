@@ -8,14 +8,14 @@ import {
   Field,
   InputType,
 } from 'type-graphql';
-import AppContext from '../AppContext';
-import AuthChecker from '../AuthChecker';
+import AppContext from '../../AppContext';
+import AuthChecker from '../../AuthChecker';
 import {
   User,
   CalendarEvent,
   CalendarEventAttendees,
   AttendeeStatus,
-} from '../models';
+} from '../../models';
 
 @InputType()
 class EventDetailsInput {
@@ -61,6 +61,7 @@ export default class CalendarEventResolver {
   }
 
   /**
+   * TODO
    * @returns a list of current user's calendar events.
    */
   async myEvents(@Ctx() ctx: AppContext): Promise<CalendarEvent[]> {

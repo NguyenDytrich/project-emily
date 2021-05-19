@@ -7,7 +7,7 @@ import {
   CalendarEvent,
   CalendarEventAttendees,
 } from '../src/models';
-import CalendarEventResolver from '../src/resolvers/CalendarEventResolver';
+import CalendarEventResolver from '../src/graphql/resolvers/CalendarEventResolver';
 
 import { createMockResolverData } from './utils/utils';
 

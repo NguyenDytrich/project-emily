@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { initialize, User } from './models';
-import { resolvers } from './resolvers';
+import { resolvers } from './graphql/resolvers';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
@@ -13,7 +13,7 @@ import {
   setRefreshToken,
   validateTokenPair,
 } from './lib';
-import { AuthResponse } from './resolvers/mutation/auth';
+import { AuthResponse } from './graphql/resolvers/AuthResolver';
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ dotenv.config();
 (async () => {
   // TODO use dotenv to configure
   // Initialize Postgres connection
-  await initialize('postgres://testsuper@localhost:5432/test');
+  await initialize('postgres://testsuper@localhost:5432/test', { force: true });
 
   // Build the schema
   const schema = await buildSchema({
@@ -32,7 +32,7 @@ dotenv.config();
   const app = express();
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: ['http://localhost:8080'],
       credentials: true,
     }),
   );
