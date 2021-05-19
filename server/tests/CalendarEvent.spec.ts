@@ -9,7 +9,7 @@ import {
 } from '../src/models';
 import CalendarEventResolver from '../src/resolvers/CalendarEventResolver';
 
-import { createMockResolverData } from './utils';
+import { createMockResolverData } from './utils/utils';
 
 import bcrypt from 'bcrypt';
 
