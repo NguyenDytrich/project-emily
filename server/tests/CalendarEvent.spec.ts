@@ -7,9 +7,9 @@ import {
   CalendarEvent,
   CalendarEventAttendees,
 } from '../src/models';
-import CalendarEventResolver from '../src/resolvers/CalendarEventResolver';
+import CalendarEventResolver from '../src/graphql/resolvers/CalendarEventResolver';
 
-import { createMockResolverData } from './utils';
+import { createMockResolverData } from './utils/utils';
 
 import bcrypt from 'bcrypt';
 
@@ -19,6 +19,7 @@ beforeAll(async () => {
   try {
     sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
       force: true,
+      logging: false,
     });
   } catch (err) {
     throw err;
