@@ -10,10 +10,10 @@ interface CreateArgs {
 }
 
 export default class UserGen {
-  readonly users: User[];
+  public readonly users: User[];
 
   constructor(readonly sequelize: Sequelize) {
-    users = [] as User[];
+    this.users = [] as User[];
   }
 
   public async create(args?: CreateArgs): Promise<User> {
@@ -23,12 +23,15 @@ export default class UserGen {
       email: args?.email ?? faker.internet.email(),
       password: args?.password ?? 'password',
     });
-    users.push(user);
+    await user.save();
+    this.users.push(user);
     return user;
   }
 
   public get first(): User {
-    if (!users[0]) this.create();
-    return users[0];
+    if (!this.users[0]) {
+      throw new Error('No users generated yet');
+    }
+    return this.users[0];
   }
 }
