@@ -21,6 +21,7 @@ beforeAll(async () => {
   }
 });
 afterAll(async () => {
+  await users.purge();
   sequelize.close();
 });
 
@@ -29,6 +30,11 @@ describe('Association tests', () => {
   beforeEach(() => {
     delta = new Delta();
     delta.insert('Hello world');
+  });
+  afterEach(async () => {
+    return Post.destroy({
+      truncate: true,
+    });
   });
   it('Users should have createPost association mixin', async () => {
     const user = users.first;
@@ -41,5 +47,14 @@ describe('Association tests', () => {
 
     expect(post).not.toBe(null);
     expect(post?.author.id).toEqual(user.id);
+  });
+  it('Users should have getPosts association mixin', async () => {
+    const user = users.first;
+    const { id } = await user.createPost({ delta });
+
+    const posts = await user.getPosts();
+
+    expect(posts.length).toEqual(1);
+    expect(posts[0].id).toEqual(id);
   });
 });

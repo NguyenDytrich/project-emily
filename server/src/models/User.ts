@@ -1,5 +1,8 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { HasManyCreateAssociationMixin } from 'sequelize';
+import {
+  HasManyCreateAssociationMixin,
+  HasManyGetAssociationsMixin,
+} from 'sequelize';
 import { ObjectType, Field } from 'type-graphql';
 import { CalendarEvent, Post } from './index';
 
@@ -70,6 +73,7 @@ export class User extends Model {
   }
 
   public createPost!: HasManyCreateAssociationMixin<Post>;
+  public getPosts!: HasManyGetAssociationsMixin<Post>;
 }
 
 export default function initialize(sequelize: Sequelize): void {
