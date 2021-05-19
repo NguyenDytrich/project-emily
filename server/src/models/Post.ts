@@ -1,6 +1,7 @@
-import { Sequelize, DataTypes, Model } from Sequelize;
+import { Sequelize, DataTypes, Model } from 'sequelize';
+import { ObjectType, Field } from 'type-graphql';
 
-import { Delta } from 'quill-delta';
+import Delta from 'quill-delta';
 
 import { User } from './User';
 
@@ -10,18 +11,18 @@ export class Post extends Model {
   public id!: number;
 
   @Field((type) => User)
-  public author: User;
+  public author!: User;
 
   @Field()
-  public delta: Delta;
+  public delta!: Delta;
 }
 
 export default function initialize(sequelize: Sequelize): void {
-  Posts.init(
+  Post.init(
     {
       delta: {
         type: DataTypes.ARRAY(DataTypes.JSON),
-        nullable: false,
+        allowNull: false,
       },
     },
     {

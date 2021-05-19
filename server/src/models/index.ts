@@ -14,7 +14,9 @@ export async function initialize(
   url: string,
   args?: InitArgs,
 ): Promise<Sequelize> {
-  const sequelize = new Sequelize(url, { logging: args?.logging });
+  const sequelize = new Sequelize(url, {
+    logging: args?.logging ?? console.log,
+  });
 
   try {
     await sequelize.authenticate();

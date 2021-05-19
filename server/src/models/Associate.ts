@@ -49,4 +49,5 @@ export async function synchronize(args?: InitArgs): Promise<void> {
   await CalendarEvent.sync(opts);
   await CalendarEventAttendees.sync(opts);
   await CalendarEventParticipants.sync(opts);
+  await Post.sync(opts);
 }
