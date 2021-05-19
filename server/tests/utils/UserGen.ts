@@ -9,11 +9,28 @@ interface CreateArgs {
   password?: string;
 }
 
-export default class UserGen {
-  public readonly users: User[];
+abstract class Generator<T> {
+  protected instances: T[];
 
   constructor(readonly sequelize: Sequelize) {
-    this.users = [] as User[];
+    this.instances = [] as T[];
+  }
+
+  public get first(): T {
+    if (!this.instances[0]) {
+      throw new Error(`No instances created`);
+    }
+    return this.instances[0];
+  }
+
+  abstract create(): Promise<T>;
+
+  abstract purge(): Promise<void>;
+}
+
+export default class UserGen extends Generator<User> {
+  constructor(sequelize: Sequelize) {
+    super(sequelize);
   }
 
   public async create(args?: CreateArgs): Promise<User> {
@@ -24,14 +41,11 @@ export default class UserGen {
       password: args?.password ?? 'password',
     });
     await user.save();
-    this.users.push(user);
+    this.instances.push(user);
     return user;
   }
 
-  public get first(): User {
-    if (!this.users[0]) {
-      throw new Error('No users generated yet');
-    }
-    return this.users[0];
+  public async purge(): Promise<void> {
+    await User.destroy({ truncate: true, cascade: true });
   }
 }
