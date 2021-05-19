@@ -57,4 +57,10 @@ describe('Association tests', () => {
     expect(posts.length).toEqual(1);
     expect(posts[0].id).toEqual(id);
   });
+  it('Should store and retrieve deltas', async () => {
+    const user = users.first;
+    const post = await user.createPost({ delta });
+
+    expect(new Delta(post.delta)).toEqual(delta);
+  });
 });
