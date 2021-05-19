@@ -5,7 +5,7 @@ import { Delta } from 'quill-delta';
 import { User } from './User';
 
 @ObjectType()
-export class Posts extends Model {
+export class Post extends Model {
   @Field()
   public id!: number;
 

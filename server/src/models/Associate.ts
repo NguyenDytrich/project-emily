@@ -3,6 +3,7 @@ import {
   CalendarEvent,
   CalendarEventAttendees,
   CalendarEventParticipants,
+  Post,
   InitArgs,
 } from './index';
 
@@ -30,6 +31,14 @@ export async function associate(): Promise<void> {
     as: 'organized_events',
     sourceKey: 'id',
     foreignKey: 'organizer_id',
+  });
+
+  User.hasMany(Post, {
+    sourceKey: 'id',
+    foreignKey: 'author_id',
+  });
+  Post.belongsTo(User, {
+    as: 'author',
   });
 }
 

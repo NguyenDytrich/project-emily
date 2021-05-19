@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 
 import initCalendar from './CalendarEvent';
 import initUser from './User';
+import initPost from './Post';
 import { associate, synchronize } from './Associate';
 
 export interface InitArgs {
@@ -24,6 +25,8 @@ export async function initialize(
 
   initUser(sequelize);
   initCalendar(sequelize);
+  initPost(sequelize);
+
   await synchronize(args);
 
   await associate();
@@ -40,3 +43,4 @@ export {
   CalendarEventAttendees,
   CalendarEventParticipants,
 } from './CalendarEvent';
+export { Post } from './Post';
