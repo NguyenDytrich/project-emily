@@ -13,6 +13,7 @@ import Delta from 'quill-delta';
 import { User, Post } from '../../models';
 import AppContext from '../../AppContext';
 import AuthChecker from '../../AuthChecker';
+import { DeltaScalar } from '../scalar';
 
 @Resolver()
 export default class PostResolver {
@@ -20,15 +21,11 @@ export default class PostResolver {
   @UseMiddleware(AuthChecker)
   public async createPost(
     // TODO Create a Delta scalar type
-    @Arg('delta') _delta: string,
+    @Arg('delta', (type) => DeltaScalar) delta: Delta,
     @Ctx() ctx: AppContext,
   ): Promise<Post> {
     const user = await User.findByPk(ctx.payload?.userId);
     if (!user) throw new Error('Unauthorized');
-
-    // TODO this is really bad code. This
-    // should be a custom Scalar.
-    const delta = new Delta(JSON.parse(_delta));
     return await user.createPost({ delta });
   }
 }

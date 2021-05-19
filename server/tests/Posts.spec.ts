@@ -95,7 +95,7 @@ describe('Resolver tests', () => {
       payload: { userId: users.first.id },
     });
 
-    const post = await resolver.createPost(JSON.stringify(delta), context);
+    const post = await resolver.createPost(delta, context);
 
     const { count, rows: posts } = await Post.findAndCountAll();
 
@@ -111,7 +111,7 @@ describe('Resolver tests', () => {
 
       expect.hasAssertions();
       try {
-        await resolver.createPost(JSON.stringify(delta), context);
+        await resolver.createPost(delta, context);
       } catch (err) {
         const posts = await Post.findAll();
         expect(err.message).toBe('Unauthorized');
