@@ -9,7 +9,7 @@ import {
 } from '../../src/resolvers/mutation/auth';
 import { EmailError, PasswordError, UserError } from '../../src/lib';
 import AuthChecker from '../../src/AuthChecker';
-import { createMockResolverData } from '../utils';
+import { createMockResolverData } from '../utils/utils';
 import {
   createAuthToken,
   createRefreshToken,

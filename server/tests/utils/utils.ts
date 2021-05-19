@@ -1,5 +1,5 @@
-import AppContext from '../src/AppContext';
-import { JwtPayload } from '../src/AppContext';
+import AppContext from '../../src/AppContext';
+import { JwtPayload } from '../../src/AppContext';
 import { ResolverData } from 'type-graphql';
 import mockito from 'ts-mockito';
 

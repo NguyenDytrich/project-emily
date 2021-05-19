@@ -9,7 +9,7 @@ interface CreateArgs {
   password?: string;
 }
 
-class UserGen {
+export default class UserGen {
   readonly users: User[];
 
   constructor(readonly sequelize: Sequelize) {
@@ -26,6 +26,9 @@ class UserGen {
     users.push(user);
     return user;
   }
-}
 
-export default new UserGen() as const;
+  public get first(): User {
+    if (!users[0]) this.create();
+    return users[0];
+  }
+}

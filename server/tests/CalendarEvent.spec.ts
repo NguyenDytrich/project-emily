@@ -19,6 +19,7 @@ beforeAll(async () => {
   try {
     sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
       force: true,
+      logging: false,
     });
   } catch (err) {
     throw err;
