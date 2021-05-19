@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import { HasManyCreateAssociationMixin } from 'sequelize';
 import { ObjectType, Field } from 'type-graphql';
-import { CalendarEvent } from './CalendarEvent';
+import { CalendarEvent, Post } from './index';
 
 interface CreateEventArgs {
   participants?: User[];
@@ -67,6 +68,8 @@ export class User extends Model {
     await event.save();
     return event;
   }
+
+  public createPost!: HasManyCreateAssociationMixin<Post>;
 }
 
 export default function initialize(sequelize: Sequelize): void {
