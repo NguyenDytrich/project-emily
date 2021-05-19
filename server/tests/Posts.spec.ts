@@ -63,4 +63,13 @@ describe('Association tests', () => {
 
     expect(new Delta(post.delta)).toEqual(delta);
   });
+  it('Posts should have getAuthor association mixin', async () => {
+    const user = users.first;
+    const post = await user.createPost({ delta });
+
+    const author = await post.getAuthor();
+
+    expect(author).toBeInstanceOf(User);
+    expect(author.id).toEqual(user.id);
+  });
 });

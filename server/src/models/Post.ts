@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import { HasOneGetAssociationMixin } from 'sequelize';
 import { ObjectType, Field } from 'type-graphql';
 
 import Delta from 'quill-delta';
@@ -15,6 +16,8 @@ export class Post extends Model {
 
   @Field()
   public delta!: Delta;
+
+  public getAuthor!: HasOneGetAssociationMixin<User>;
 }
 
 export default function initialize(sequelize: Sequelize): void {
