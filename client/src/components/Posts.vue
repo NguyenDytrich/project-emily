@@ -22,7 +22,9 @@
       </li>
     </ul>
     <transition name="fade">
-      <ModalBase v-if="showModal" @close-modal="closeModal"> </ModalBase>
+      <ModalBase v-if="showModal" @close-modal="closeModal">
+        <CreatePostForm />
+      </ModalBase>
     </transition>
   </div>
 </template>
@@ -30,10 +32,12 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import ModalBase from "./ModalBase.vue";
+import CreatePostForm from "./CreatePostForm.vue";
 
 export default defineComponent({
   components: {
     ModalBase,
+    CreatePostForm,
   },
   created() {
     this.$emitter.on("close-modal", this.closeModal);
