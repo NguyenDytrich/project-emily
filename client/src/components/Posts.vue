@@ -6,7 +6,9 @@
     <ul>
       <li>
         <div id="new-post" class="post new-post">
-          <div class="text-center">Post Something New</div>
+          <div class="text-center" @click="toggleModal">
+            <a>Post Something New</a>
+          </div>
         </div>
       </li>
       <li v-for="p in posts" :key="p.postId">
@@ -19,14 +21,25 @@
         </div>
       </li>
     </ul>
+    <transition name="fade">
+      <ModalBase v-if="showModal" @close-modal="closeModal"> </ModalBase>
+    </transition>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
+import ModalBase from "./ModalBase.vue";
 
 export default defineComponent({
+  components: {
+    ModalBase,
+  },
+  created() {
+    this.$emitter.on("close-modal", this.closeModal);
+  },
   data() {
+    const showModal = ref(false);
     const posts = [
       {
         author: "Abc Defg",
@@ -47,12 +60,18 @@ export default defineComponent({
         timestamp: Date.now(),
       },
     ];
-    return { posts };
+    return { posts, showModal };
   },
   methods: {
     fdate(_date: number) {
       const date = new Date(_date);
       return `at ${date.getHours()}:${date.getMinutes()} on ${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
+    },
+    closeModal() {
+      this.showModal = false;
+    },
+    toggleModal() {
+      this.showModal = !this.showModal;
     },
   },
 });
