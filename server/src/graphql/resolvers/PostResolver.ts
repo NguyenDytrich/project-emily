@@ -26,6 +26,15 @@ export default class PostResolver {
   ): Promise<Post> {
     const user = await User.findByPk(ctx.payload?.userId);
     if (!user) throw new Error('Unauthorized');
-    return await user.createPost({ delta });
+    const post = await user.createPost({ delta });
+    post.author = user;
+    return post;
+  }
+
+  // Untested
+  @Query(() => [Post])
+  public async posts(): Promise<Post[]> {
+    const posts = await Post.findAll({ include: { all: true } });
+    return posts;
   }
 }

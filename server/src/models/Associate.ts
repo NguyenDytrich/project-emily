@@ -39,6 +39,8 @@ export async function associate(): Promise<void> {
   });
   Post.belongsTo(User, {
     as: 'author',
+    foreignKey: 'author_id',
+    targetKey: 'id',
   });
 }
 
