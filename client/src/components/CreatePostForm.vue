@@ -9,6 +9,7 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import Quill from "quill";
+import Delta from "quill-delta";
 import axios from "axios";
 import { useStore } from "vuex";
 import { key } from "@/store";
@@ -16,10 +17,10 @@ import { key } from "@/store";
 export default defineComponent({
   setup() {
     const store = useStore(key);
-    return { editor: null, store };
+    return { quill: {} as Quill, store };
   },
   mounted() {
-    this.editor = new Quill(this.$refs.editor, {
+    this.quill = new Quill(this.$refs.editor as Element, {
       modules: {
         toolbar: [
           [{ header: [1, 2, 3, 4, false] }],
@@ -30,10 +31,10 @@ export default defineComponent({
       formats: ["bold", "underline", "header", "italic"],
     });
 
-    this.editor.on("text-change", (delta) => this.update(delta));
+    this.quill.on("text-change", () => this.update());
   },
   data() {
-    const delta = ref(null);
+    const delta = ref({} as Delta);
     return {
       delta,
     };
@@ -41,8 +42,8 @@ export default defineComponent({
   methods: {
     update() {
       // Emit input event
-      this.$emit("input", this.editor.getText() ? this.editor.rootHTML : "");
-      this.delta = this.editor.getContents();
+      this.$emit("input", this.quill.getText());
+      this.delta = this.quill.getContents();
     },
     async submit() {
       if (this.delta == null) {

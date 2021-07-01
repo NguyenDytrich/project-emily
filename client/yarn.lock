@@ -1106,10 +1106,10 @@
   resolved "https://registry.npm.taobao.org/@types/qs/download/@types/qs-6.9.6.tgz?cache=0&sync_timestamp=1615109179784&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fqs%2Fdownload%2F%40types%2Fqs-6.9.6.tgz#df9c3c8b31a247ec315e6996566be3171df4b3b1"
   integrity sha1-35w8izGiR+wxXmmWVmvjFx30s7E=
 
-"@types/quill@^2.0.7":
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/@types/quill/-/quill-2.0.7.tgz#d8c3ecedd0037c5a292a6e5bca1dd707c8154d54"
-  integrity sha512-340anKoinrNFua/paGi3srUVOx+kQnAvaTrfjojwsbwqEc1tBhVf7+xJVv7IrnkfEZAKjmZnSCYT2Dtw3+xBHA==
+"@types/quill@^2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@types/quill/-/quill-2.0.8.tgz#1dcc354ac917bdb6466ea1232f83fcc308220b8f"
+  integrity sha512-N1wph1bN/z+QZpt/fixD1ErQfnwaiekppszFuV9VK1dHRw/WlLAHEaODwprJ2uqyrjTYnsBm52mCQs0PSosuoQ==
   dependencies:
     parchment "^1.1.2"
     quill-delta "^4.0.1"
@@ -7489,7 +7489,7 @@ quill-delta@^3.6.2:
     extend "^3.0.2"
     fast-diff "1.1.2"
 
-quill-delta@^4.0.1:
+quill-delta@^4.0.1, quill-delta@^4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/quill-delta/-/quill-delta-4.2.2.tgz#015397d046e0a3bed087cd8a51f98c11a1b8f351"
   integrity sha512-qjbn82b/yJzOjstBgkhtBjN2TNK+ZHP/BgUQO+j6bRhWQQdmj2lH6hXG7+nwwLF41Xgn//7/83lxs9n2BkTtTg==
