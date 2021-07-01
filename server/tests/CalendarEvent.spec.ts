@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { Sequelize } from 'sequelize';
 import {
@@ -17,7 +19,7 @@ const users = [] as User[];
 let sequelize: Sequelize;
 beforeAll(async () => {
   try {
-    sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
+    sequelize = await initialize(process.env.DB_URL ?? '', {
       force: true,
       logging: false,
     });

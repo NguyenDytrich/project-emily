@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { Sequelize } from 'sequelize';
 import Delta from 'quill-delta';
@@ -13,7 +15,7 @@ let sequelize: Sequelize;
 let users: UserGen;
 beforeAll(async () => {
   try {
-    sequelize = await initialize('postgres://testsuper@localhost:5432/test', {
+    sequelize = await initialize(process.env.DB_URL ?? '', {
       force: true,
       logging: false,
     });

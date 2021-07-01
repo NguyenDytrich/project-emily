@@ -5,9 +5,6 @@ export const DeltaScalar = new GraphQLScalarType({
   name: 'Delta',
   description: 'A Quill Delta object',
   serialize(value: unknown): string {
-    if (!(value instanceof Delta)) {
-      throw new Error('DeltaScalar can only serialize Delta values');
-    }
     return JSON.stringify(value);
   },
   parseValue(value: unknown): Delta {

@@ -19,11 +19,11 @@ dotenv.config();
 
 // Entrypoint
 (async () => {
-  // TODO use dotenv to configure
   // Initialize Postgres connection
-  await initialize('postgres://testsuper@localhost:5432/test', { force: true });
+  const dbUrl = process.env.DB_URL ?? '';
+  await initialize(dbUrl);
 
-  // Build the schema
+  // Build the GraphQL schema
   const schema = await buildSchema({
     resolvers,
   });
