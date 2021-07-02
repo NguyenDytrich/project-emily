@@ -1,5 +1,5 @@
-import { InjectionKey } from "vue";
-import { createStore, Store, Module } from "vuex";
+import { InjectionKey } from 'vue';
+import { createStore, Store, Module } from 'vuex';
 
 export interface UserState {
   userId: number;
@@ -14,20 +14,20 @@ export interface RootState {
 const userModule: Module<UserState, RootState> = {
   state: {
     userId: -1,
-    username: "",
-    token: "",
+    username: '',
+    token: '',
   },
   mutations: {
     setAuth(state, token: string) {
       state.token = token;
     },
     logout(state) {
-      state.token = "";
+      state.token = '';
     },
   },
   getters: {
     isAuth: (state) => {
-      return state.token !== "" ? true : false;
+      return state.token !== '' ? true : false;
     },
     getAuth: (state) => {
       return `Bearer ${state.token}`;

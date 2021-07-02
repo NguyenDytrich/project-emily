@@ -78,11 +78,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
-import { key } from "../store";
-import axios from "axios";
+import { defineComponent, reactive, ref } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import { key } from '../store';
+import axios from 'axios';
 
 export default defineComponent({
   setup() {
@@ -93,16 +93,16 @@ export default defineComponent({
   data: () => {
     const view = ref(0);
     const signup = reactive({
-      fname: "",
-      lname: "",
-      email: "",
-      password: "",
-      passwordConf: "",
+      fname: '',
+      lname: '',
+      email: '',
+      password: '',
+      passwordConf: '',
     });
 
     const login = reactive({
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     });
 
     return {
@@ -118,8 +118,8 @@ export default defineComponent({
     async signupUser() {
       try {
         const res = await axios({
-          url: "http://localhost:4000/graphql",
-          method: "post",
+          url: 'http://localhost:4000/graphql',
+          method: 'post',
           data: {
             query: `
 						mutation signup($args:UserSignupInput!){
@@ -138,7 +138,7 @@ export default defineComponent({
         });
         if (!res.data.errors) {
           // TODO pop up a signup modal, automatically sign in or tell app to load welcome screen
-          this.$router.push("/");
+          this.$router.push('/');
         } else {
           console.log(res.data);
         }
@@ -149,8 +149,8 @@ export default defineComponent({
     async loginUser() {
       try {
         const res = await axios({
-          url: "http://localhost:4000/graphql",
-          method: "post",
+          url: 'http://localhost:4000/graphql',
+          method: 'post',
           data: {
             query: `
 						mutation login($email:String!, $password:String!) {
@@ -164,8 +164,8 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
-          this.store.commit("setAuth", res.data.data.login.token);
-          this.router.push({ path: "/" });
+          this.store.commit('setAuth', res.data.data.login.token);
+          this.router.push({ path: '/' });
         } else {
           console.log(res.data);
         }

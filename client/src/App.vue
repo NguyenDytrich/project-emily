@@ -33,11 +33,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { useStore, mapGetters } from "vuex";
-import { useRouter } from "vue-router";
-import { key } from "./store";
-import Login from "./views/Login.vue";
+import { defineComponent } from 'vue';
+import { useStore, mapGetters } from 'vuex';
+import { useRouter } from 'vue-router';
+import { key } from './store';
+import Login from './views/Login.vue';
 
 export default defineComponent({
   setup() {
@@ -50,12 +50,12 @@ export default defineComponent({
   },
   methods: {
     logout() {
-      this.store.commit("logout");
-      this.router.push("/");
+      this.store.commit('logout');
+      this.router.push('/');
     },
   },
   computed: {
-    ...mapGetters(["isAuth"]),
+    ...mapGetters(['isAuth']),
   },
 });
 </script>

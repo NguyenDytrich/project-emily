@@ -17,7 +17,7 @@
         <!-- Date squares -->
         <div class="date-square" v-for="d in dates" :key="d.date">
           <a class="date-content" :class="{ today: d.today }">{{
-            d.date > 0 ? d.date : ""
+            d.date > 0 ? d.date : ''
           }}</a>
           <div v-if="d.events?.length > 0" class="events">
             <div v-for="e in d.events" :key="e.name" class="event">
@@ -36,10 +36,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onBeforeMount } from "vue";
-import ModalBase from "../components/ModalBase.vue";
-import CreateEventForm from "../components/CreateEventForm.vue";
-import axios from "axios";
+import { defineComponent, ref, reactive, onBeforeMount } from 'vue';
+import ModalBase from '../components/ModalBase.vue';
+import CreateEventForm from '../components/CreateEventForm.vue';
+import axios from 'axios';
 
 /**
  * Function that returns the number of dates
@@ -66,11 +66,11 @@ export default defineComponent({
     CreateEventForm,
   },
   created() {
-    this.$emitter.on("close-modal", this.closeModal);
+    this.$emitter.on('close-modal', this.closeModal);
   },
   data() {
     const dates = reactive([] as CalendarEvent[]);
-    const dayHeaders = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+    const dayHeaders = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     const showModal = ref(false);
     onBeforeMount(async () => {
       const today = new Date();
@@ -92,8 +92,8 @@ export default defineComponent({
           data: { events },
         },
       } = await axios({
-        url: "http://localhost:4000/graphql",
-        method: "post",
+        url: 'http://localhost:4000/graphql',
+        method: 'post',
         data: {
           query: `
 						query {

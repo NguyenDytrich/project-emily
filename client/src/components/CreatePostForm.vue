@@ -7,12 +7,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import Quill from "quill";
-import Delta from "quill-delta";
-import axios from "axios";
-import { useStore } from "vuex";
-import { key } from "@/store";
+import { defineComponent, ref } from 'vue';
+import Quill from 'quill';
+import Delta from 'quill-delta';
+import axios from 'axios';
+import { useStore } from 'vuex';
+import { key } from '@/store';
 
 export default defineComponent({
   setup() {
@@ -24,14 +24,14 @@ export default defineComponent({
       modules: {
         toolbar: [
           [{ header: [1, 2, 3, 4, false] }],
-          ["bold", "italic", "underline"],
+          ['bold', 'italic', 'underline'],
         ],
       },
-      theme: "snow",
-      formats: ["bold", "underline", "header", "italic"],
+      theme: 'snow',
+      formats: ['bold', 'underline', 'header', 'italic'],
     });
 
-    this.quill.on("text-change", () => this.update());
+    this.quill.on('text-change', () => this.update());
   },
   data() {
     const delta = ref({} as Delta);
@@ -42,18 +42,18 @@ export default defineComponent({
   methods: {
     update() {
       // Emit input event
-      this.$emit("input", this.quill.getText());
+      this.$emit('input', this.quill.getText());
       this.delta = this.quill.getContents();
     },
     async submit() {
       if (this.delta == null) {
-        console.log("Empty form");
+        console.log('Empty form');
         return;
       }
       try {
         const res = await axios({
-          url: "http://localhost:4000/graphql",
-          method: "post",
+          url: 'http://localhost:4000/graphql',
+          method: 'post',
           data: {
             query: `
 						mutation createPost($args:Delta!) {
@@ -74,7 +74,7 @@ export default defineComponent({
           },
         });
         if (!res.data.errors) {
-          this.$emitter.emit("start-close-modal");
+          this.$emitter.emit('start-close-modal');
         } else {
           console.log(res.data);
         }
@@ -87,6 +87,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@import "~quill/dist/quill.core.css";
-@import "~quill/dist/quill.snow.css";
+@import '~quill/dist/quill.core.css';
+@import '~quill/dist/quill.snow.css';
 </style>

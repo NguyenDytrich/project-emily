@@ -1,5 +1,5 @@
-import { App } from "vue";
-import mitt from "mitt";
+import { App } from 'vue';
+import mitt from 'mitt';
 
 const emitter = mitt();
 

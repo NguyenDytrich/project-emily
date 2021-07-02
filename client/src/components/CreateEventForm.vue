@@ -38,10 +38,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from "vue";
-import { useStore } from "vuex";
-import { key } from "@/store";
-import axios from "axios";
+import { defineComponent, reactive } from 'vue';
+import { useStore } from 'vuex';
+import { key } from '@/store';
+import axios from 'axios';
 
 export default defineComponent({
   setup() {
@@ -50,22 +50,22 @@ export default defineComponent({
   },
   data() {
     const formState = reactive({
-      title: "",
-      description: "",
-      date: "",
+      title: '',
+      description: '',
+      date: '',
     });
     return { formState };
   },
   methods: {
     startClose() {
-      this.$emitter.emit("start-close-modal");
+      this.$emitter.emit('start-close-modal');
     },
     async createEvent() {
       console.log(this.formState.date);
       try {
         const res = await axios({
-          url: "http://localhost:4000/graphql",
-          method: "post",
+          url: 'http://localhost:4000/graphql',
+          method: 'post',
           data: {
             query: `
 						mutation createEvent($args:EventDetailsInput!) {

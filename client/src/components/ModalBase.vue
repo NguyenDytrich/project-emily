@@ -19,11 +19,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   created() {
-    this.$emitter.on("start-close-modal", this.closeModal);
+    this.$emitter.on('start-close-modal', this.closeModal);
   },
   data() {
     const exiting = false;
@@ -35,7 +35,7 @@ export default defineComponent({
     closeModal() {
       this.exiting = true;
       setTimeout(() => {
-        this.$emitter.emit("close-modal");
+        this.$emitter.emit('close-modal');
       }, 250);
     },
   },

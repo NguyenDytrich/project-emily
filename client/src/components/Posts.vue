@@ -30,9 +30,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import ModalBase from "./ModalBase.vue";
-import CreatePostForm from "./CreatePostForm.vue";
+import { defineComponent, ref } from 'vue';
+import ModalBase from './ModalBase.vue';
+import CreatePostForm from './CreatePostForm.vue';
 
 export default defineComponent({
   components: {
@@ -40,26 +40,26 @@ export default defineComponent({
     CreatePostForm,
   },
   created() {
-    this.$emitter.on("close-modal", this.closeModal);
+    this.$emitter.on('close-modal', this.closeModal);
   },
   data() {
     const showModal = ref(false);
     const posts = [
       {
-        author: "Abc Defg",
-        post: "Hello world",
+        author: 'Abc Defg',
+        post: 'Hello world',
         postId: 0,
         timestamp: Date.now(),
       },
       {
-        author: "Abc Defg",
-        post: "Test post please ignore",
+        author: 'Abc Defg',
+        post: 'Test post please ignore',
         postId: 1,
         timestamp: Date.now(),
       },
       {
-        author: "Abc Defg",
-        post: "Test post 2 please ignore",
+        author: 'Abc Defg',
+        post: 'Test post 2 please ignore',
         postId: 2,
         timestamp: Date.now(),
       },

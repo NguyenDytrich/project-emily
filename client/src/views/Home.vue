@@ -66,20 +66,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import Posts from "../components/Posts.vue";
+import { defineComponent } from 'vue';
+import Posts from '../components/Posts.vue';
 
 const gigs = [
   {
-    title: "Musicians for wedding",
-    tags: ["piano", "strings", "wedding", "music"],
+    title: 'Musicians for wedding',
+    tags: ['piano', 'strings', 'wedding', 'music'],
     date: new Date(2021, 7, 20),
     timestamp: Date.now(),
     id: 1,
   },
   {
-    title: "Designer for Website",
-    tags: ["designer", "web"],
+    title: 'Designer for Website',
+    tags: ['designer', 'web'],
     date: new Date(2021, 7, 20),
     timestamp: Date.now(),
     id: 2,
@@ -88,9 +88,9 @@ const gigs = [
 
 const events = [
   {
-    title: "Senior Recital",
-    tags: ["music", "piano"],
-    organizer: "Lolo Wolo",
+    title: 'Senior Recital',
+    tags: ['music', 'piano'],
+    organizer: 'Lolo Wolo',
     date: new Date(2021, 7, 16, 10, 30),
     timestamp: Date.now(),
     id: 0,
@@ -136,6 +136,4 @@ export default defineComponent({
   grid-row-start: 2;
   grid-row-end: last-line;
 }
-
-
 </style>
